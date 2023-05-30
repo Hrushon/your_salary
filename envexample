@@ -1,0 +1,6 @@
+DEBUG=True # Включение (True) или выключение (False) режима отладки
+DB_NAME=mirror_db # имя базы данных
+DB_USER=postgres # пользователь базы данных
+DB_PASSWORD=postgres # пароль базы данных
+DB_HOST=mirror_db # сервис (контейнер) базы данных
+DB_PORT=5432 # порт для подключения базы данных
