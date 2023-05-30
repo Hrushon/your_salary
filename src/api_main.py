@@ -17,7 +17,7 @@ def create_application() -> FastAPI:
         """Дополнительные действия при запуске приложения."""
         pass
 
-    @app.on_event("shutdown")
+    @app.on_event('shutdown')
     async def on_shutdown():
         """Дополнительные действия при остановке приложения."""
         pass

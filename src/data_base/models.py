@@ -1,7 +1,8 @@
 import enum
 from datetime import date, datetime
 
-from sqlalchemy import TIMESTAMP, Enum, ForeignKey, String, func
+from sqlalchemy import (TIMESTAMP, CheckConstraint, Enum, ForeignKey, String,
+                        func)
 from sqlalchemy.ext.declarative import as_declarative, declared_attr  # noqa
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -33,9 +34,13 @@ class User(Base):
         """Статус пользователя."""
 
         BLOCKED = 'blocked'
-        VERIFIED = 'verified'
+        ACTIVE = 'active'
         ADMIN = 'admin'
-        SELLER = 'seller'
+        STUFF = 'stuff'
+
+    __table_args__ = (
+        CheckConstraint('date_birth < {}'.format(func.current_timestamp())),
+    )
 
     first_name: Mapped[str] = mapped_column(String(length=150))
     last_name: Mapped[str] = mapped_column(String(length=150))
@@ -49,34 +54,37 @@ class User(Base):
             values_callable=lambda obj: [e.value for e in obj],
         ), default=Status.BLOCKED.value
     )
-    phone: Mapped[str] = mapped_column(String(length=20), unique=True)
-    address_id: Mapped[int] = mapped_column(
-        ForeignKey('address.id', ondelete='SET NULL')
+    department_id: Mapped[int] = mapped_column(
+        ForeignKey('department.id', ondelete='SET NULL')
     )
-    address: Mapped['Address'] = relationship(back_populates='clients')
+    department: Mapped['Department'] = relationship(back_populates='employees')
+    position_id: Mapped[int] = mapped_column(
+        ForeignKey('position.id', ondelete='SET NULL')
+    )
+    position: Mapped['Position'] = relationship(back_populates='employees')
     permission_id: Mapped[int] = mapped_column(
         ForeignKey('permission.id', ondelete='SET DEFAULT'), server_default=''
     )  # declare the default value!!!!!
     right_level: Mapped['Permission'] = relationship(back_populates='users')
 
 
-class Product(Base):
-    """Модель для продукта."""
+class Salary(Base):
+    """Модель для заработной платы."""
 
-    title: Mapped[str] = mapped_column(String(length=256))
-    description: Mapped[str]
-
-
-class Category(Base):
-    """Модель для категорий продуктов."""
-
-    name: Mapped[str] = mapped_column(String(length=120))
-    permission_id: Mapped[int] = mapped_column(
-        ForeignKey('permission.id', ondelete='CASCADE')
+    __table_args__ = (
+        CheckConstraint('raise_date >= {}'.format(func.current_timestamp())),
     )
-    right_level: Mapped['Permission'] = relationship(
-        back_populates='categories'
-    )
+
+    amount: Mapped[int] = mapped_column(CheckConstraint('amount > 0'))
+    raise_date: Mapped[date]
+
+
+class Department(Base):
+    pass
+
+
+class Position(Base):
+    pass
 
 
 class Permission(Base):
