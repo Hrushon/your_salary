@@ -1,3 +1,4 @@
+import uuid
 from functools import lru_cache
 
 from pydantic import BaseSettings, PostgresDsn
@@ -8,6 +9,8 @@ class Settings(BaseSettings):
 
     # Режим отладки (True/False - Активирован/Деактивирован)
     DEBUG: bool
+    # Секретный ключ для генерации токенов
+    SECRET_KEY: str = str(uuid.uuid4())
 
     # База данных
     DB_NAME: str

@@ -1,7 +1,7 @@
 import enum
 from datetime import date, datetime
 
-from sqlalchemy import (TIMESTAMP, CheckConstraint, Enum, ForeignKey, String,
+from sqlalchemy import (TIMESTAMP, CheckConstraint, Enum, Numeric, ForeignKey, String,
                         func)
 from sqlalchemy.ext.declarative import as_declarative, declared_attr  # noqa
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -33,39 +33,39 @@ class User(Base):
     class Status(enum.Enum):
         """Статус пользователя."""
 
-        BLOCKED = 'blocked'
-        ACTIVE = 'active'
         ADMIN = 'admin'
-        STUFF = 'stuff'
+        EMPLOYEE = 'employee'
+        STAFF = 'staff'
 
     __table_args__ = (
-        CheckConstraint('date_birth < {}'.format(func.current_timestamp())),
+        CheckConstraint('date_of_birth < {}'.format(func.current_timestamp())),
     )
 
     first_name: Mapped[str] = mapped_column(String(length=150))
     last_name: Mapped[str] = mapped_column(String(length=150))
-    nick_name: Mapped[str] = mapped_column(String(length=150), unique=True)
+    username: Mapped[str] = mapped_column(String(length=150), unique=True)
     password: Mapped[str] = mapped_column(String(length=100))
-    date_birth: Mapped[date]
+    date_of_birth: Mapped[date]
     status: Mapped[Status] = mapped_column(
         Enum(
             Status,
             name='user_status',
             values_callable=lambda obj: [e.value for e in obj],
-        ), default=Status.BLOCKED.value
+        ), server_default=Status.EMPLOYEE.value
     )
+    is_blocked: Mapped[bool] = mapped_column(default=True)
     department_id: Mapped[int] = mapped_column(
-        ForeignKey('department.id', ondelete='SET NULL')
+        ForeignKey('department.id', ondelete='SET NULL'), nullable=True
     )
     department: Mapped['Department'] = relationship(back_populates='employees')
     position_id: Mapped[int] = mapped_column(
-        ForeignKey('position.id', ondelete='SET NULL')
+        ForeignKey('position.id', ondelete='SET NULL'), nullable=True
     )
     position: Mapped['Position'] = relationship(back_populates='employees')
-    permission_id: Mapped[int] = mapped_column(
-        ForeignKey('permission.id', ondelete='SET DEFAULT'), server_default=''
-    )  # declare the default value!!!!!
-    right_level: Mapped['Permission'] = relationship(back_populates='users')
+    salary_id: Mapped[int] = mapped_column(
+        ForeignKey('salary.id', ondelete='SET NULL'), nullable=True
+    )
+    salary: Mapped['Salary'] = relationship(back_populates='employee')
 
 
 class Salary(Base):
@@ -75,21 +75,18 @@ class Salary(Base):
         CheckConstraint('raise_date >= {}'.format(func.current_timestamp())),
     )
 
-    amount: Mapped[int] = mapped_column(CheckConstraint('amount > 0'))
+    amount: Mapped[float] = mapped_column(Numeric(9,2), CheckConstraint('amount > 0'))
     raise_date: Mapped[date]
+    employee: Mapped['User'] = relationship(back_populates='salary')
 
 
 class Department(Base):
-    pass
+
+    title: Mapped[str] = mapped_column(String(length=256), unique=True)
+    employees: Mapped[list['User']] = relationship(back_populates='department')
 
 
 class Position(Base):
-    pass
 
-
-class Permission(Base):
-    pass
-
-
-class Address(Base):
-    pass
+    title: Mapped[str] = mapped_column(String(length=100), unique=True)
+    employees: Mapped[list['User']] = relationship(back_populates='position')
