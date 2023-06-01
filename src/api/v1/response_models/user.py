@@ -12,7 +12,7 @@ class TokenData(BaseModel):
     username: str | None = None
 
 
-class User(BaseModel):
+class UserResponse(BaseModel):
     id: int
     first_name: str
     last_name: str
@@ -20,9 +20,15 @@ class User(BaseModel):
     date_of_birth: date
     is_blocked: bool
     status: str
-    department: str
-    position: str
+    department: str | None
+    position: str | None
+
+    class Config:
+        orm_mode = True
 
 
-class UserInDB(User):
+class UserInDB(UserResponse):
     password: str
+
+    class Config:
+        orm_mode = True
