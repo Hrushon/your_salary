@@ -1,11 +1,10 @@
-from datetime import date
+from pydantic import Field, PastDate, SecretStr, StrictStr
 
-from pydantic import StrictStr, SecretStr, Field, PastDate
-
-from .base_request import BaseRequest
 from api.v1.response_models.department import Department
 from api.v1.response_models.position import Position
 from api.v1.response_models.salary import Salary
+
+from .base_request import BaseRequest
 from .validators import first_and_last_name_validator, username_validator
 
 

@@ -1,4 +1,4 @@
-from pydantic import StrictStr, Field
+from pydantic import Field, StrictStr
 
 from .base_request import BaseRequest
 from .validators import department_position_validator
