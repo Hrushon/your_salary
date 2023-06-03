@@ -12,7 +12,12 @@ def create_application() -> FastAPI:
 
     Производит добавление роутеров к объекту приложения.
     """
-    app = FastAPI(debug=settings.DEBUG)
+    app = FastAPI(
+        title='Your Salary ™',
+        description=settings.DESCRIPTION,
+        debug=settings.DEBUG,
+        version=1.0,
+    )
     app.include_router(base_router.router)
 
     app.add_exception_handler(

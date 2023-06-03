@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Path, status
 
 from src.api.v1.request_models.department import (DepartmentCreateRequest,
                                                   DepartmentUpdateRequest)
@@ -9,7 +9,7 @@ from src.core.services.departments_servise import DepartmentsService
 
 router = APIRouter(
     prefix='/departments',
-    tags=['departments'],
+    tags=['Департамент'],
 )
 
 
@@ -22,6 +22,13 @@ router = APIRouter(
 async def get_departments(
     service: Annotated[DepartmentsService, Depends()]
 ) -> list[DepartmentResponse]:
+    """
+    Возвращает список всех департаментов из базы данных.
+
+    - **id**: уникальный идентификатор записи в БД
+    - **title**: название департамента
+    - **employees**: список работников департамента
+    """
     return await service.get_all()
 
 
@@ -35,7 +42,34 @@ async def create_departament(
     data: DepartmentCreateRequest,
     service: Annotated[DepartmentsService, Depends()],
 ) -> DepartmentResponse:
+    """
+    Создает запись нового департамента в базе данных.
+
+    - **id**: уникальный идентификатор записи в БД
+    - **title**: название департамента
+    - **employees**: список работников департамента
+    """
     return await service.create_department(data=data)
+
+
+@router.get(
+    '/{obj_id}/',
+    status_code=status.HTTP_200_OK,
+    summary='Получить данные отдельного департамента из БД',
+    response_description='Получены данные департамента из БД'
+)
+async def get_departament_by_id(
+    obj_id: Annotated[int, Path(description='Значение поля id записи', gt=0)],
+    service: Annotated[DepartmentsService, Depends()],
+) -> DepartmentResponse:
+    """
+    Возвращает запись отдельного департамента из базы данных по полю `id`.
+
+    - **id**: уникальный идентификатор записи в БД
+    - **title**: название департамента
+    - **employees**: список работников департамента
+    """
+    return await service.get_by_id(obj_id=obj_id)
 
 
 @router.patch(
@@ -45,10 +79,19 @@ async def create_departament(
     response_description='Обновленны данные департамента в БД'
 )
 async def update_departament(
-    obj_id: int,
+    obj_id: Annotated[int, Path(description='Значение поля id записи', gt=0)],
     data: DepartmentUpdateRequest,
     service: Annotated[DepartmentsService, Depends()],
 ) -> DepartmentResponse:
+    """
+    Обновляет запись отдельного департамента в базы данных по полю `id`.
+
+    И возвращает данные обновленного департамента.
+
+    - **id**: уникальный идентификатор записи в БД
+    - **title**: название департамента
+    - **employees**: список работников департамента
+    """
     return await service.update_department(obj_id=obj_id, data=data)
 
 
@@ -59,7 +102,8 @@ async def update_departament(
     response_description='Удалены данные департамента из БД'
 )
 async def delete_departament(
-    obj_id: int,
+    obj_id: Annotated[int, Path(description='Значение поля id записи', gt=0)],
     service: Annotated[DepartmentsService, Depends()],
 ) -> None:
+    """Удаляет запись отдельного департамента из базы данных по полю `id`."""
     return await service.delete_department(obj_id=obj_id)

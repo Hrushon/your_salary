@@ -2,7 +2,7 @@ from fastapi import APIRouter, status
 
 router = APIRouter(
     prefix='/checking',
-    tags=['checking'],
+    tags=['Проверка API'],
 )
 
 

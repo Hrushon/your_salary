@@ -4,7 +4,6 @@ from src.api.v1 import routers
 
 router = APIRouter(
     prefix='/api/v1',
-    tags=['api'],
     responses={404: {'description': 'Ничего не найдено'}},
 )
 

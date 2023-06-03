@@ -27,6 +27,13 @@ class UserResponse(BaseModel):
         orm_mode = True
 
 
+class UserNestedResponse(BaseModel):
+    id: int
+    first_name: str
+    last_name: str
+    status: str
+
+
 class UserInDB(UserResponse):
     password: str
 
