@@ -59,7 +59,10 @@ class UserNestedResponse(BaseModel):
     id: int
     first_name: str
     last_name: str
-    status: str
+    status: User.Status
+
+    class Config:
+        orm_mode = True
 
 
 class UserInDB(UserResponse):

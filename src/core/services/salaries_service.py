@@ -12,11 +12,11 @@ class SalariesService:
     def __init__(
         self, salary_crud: Annotated[SalaryCRUD, Depends()]
     ) -> None:
-        self._crud = salary_crud
+        self.__crud = salary_crud
 
     async def get_all(self) -> list[Salary]:
         """Возвращает список всех заработных плат из БД."""
-        return await self._crud.get_all()
+        return await self.__crud.get_all()
 
     async def create_salary(
         self, data: SalaryCreateRequest
@@ -27,7 +27,7 @@ class SalariesService:
             data: SalaryCreateRequest - данные для создания объекта.
         """
         salary = Salary(**data.dict())
-        return await self._crud.create(salary)
+        return await self.__crud.create(salary)
 
     async def get_by_id(
         self, obj_id: int
@@ -37,7 +37,7 @@ class SalariesService:
         Аргументы:
             obj_id: int - значение поля `id` записи в БД.
         """
-        return await self._crud.get_or_404(obj_id=obj_id)
+        return await self.__crud.get_or_404(obj_id=obj_id)
 
     async def update_salary(
         self, obj_id: int, data: SalaryUpdateRequest
@@ -49,7 +49,7 @@ class SalariesService:
             data: SalaryUpdateRequest - данные для создания объекта.
         """
         data_dict = data.dict(exclude_unset=True)
-        return await self._crud.update(obj_id, data_dict)
+        return await self.__crud.update(obj_id, data_dict)
 
     async def delete_salary(self, obj_id: int) -> None:
         """Удаляет запись с данными заработной платы из БД.
@@ -57,4 +57,4 @@ class SalariesService:
         Аргументы:
             obj_id: int - значение поля `id` записи в БД.
         """
-        return await self._crud.delete(obj_id)
+        return await self.__crud.delete(obj_id)

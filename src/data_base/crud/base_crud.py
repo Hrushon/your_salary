@@ -33,7 +33,7 @@ class BaseCRUD(ABC):
     async def get_all(self) -> list[ModelType | None]:
         """Возвращает список всех объектов модели."""
         objects = await self._session.scalars(select(self._model))
-        return objects.all()
+        return objects.unique().all()
 
     async def create(self, instance: ModelType) -> ModelType:
         """Создает объект модели и сохраняет в БД."""

@@ -9,7 +9,7 @@ class SalaryResponse(BaseModel):
     id: int
     amount: float
     raise_date: date
-    empoloyee: UserNestedResponse | None
+    employee: UserNestedResponse | None
 
     class Config:
         orm_mode = True

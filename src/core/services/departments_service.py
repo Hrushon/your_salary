@@ -12,11 +12,11 @@ class DepartmentsService:
     def __init__(
         self, department_crud: Annotated[DepartmentCRUD, Depends()]
     ) -> None:
-        self._crud = department_crud
+        self.__crud = department_crud
 
     async def get_all(self) -> list[Department]:
         """Возвращает список всех департаментов из БД."""
-        return await self._crud.get_all()
+        return await self.__crud.get_all()
 
     async def create_department(
         self, data: DepartmentCreateRequest
@@ -27,7 +27,7 @@ class DepartmentsService:
             data: DepartmentCreateRequest - данные для создания объекта.
         """
         department = Department(**data.dict())
-        return await self._crud.create(department)
+        return await self.__crud.create(department)
 
     async def get_by_id(
         self, obj_id: int
@@ -37,7 +37,7 @@ class DepartmentsService:
         Аргументы:
             obj_id: int - значение поля `id` записи в БД.
         """
-        return await self._crud.get_or_404(obj_id=obj_id)
+        return await self.__crud.get_or_404(obj_id=obj_id)
 
     async def update_department(
         self, obj_id: int, data: DepartmentUpdateRequest
@@ -49,7 +49,7 @@ class DepartmentsService:
             data: DepartmentUpdateRequest - данные для создания объекта.
         """
         data_dict = data.dict(exclude_unset=True)
-        return await self._crud.update(obj_id, data_dict)
+        return await self.__crud.update(obj_id, data_dict)
 
     async def delete_department(self, obj_id: int) -> None:
         """Удаляет запись с данными департамента из БД.
@@ -57,4 +57,4 @@ class DepartmentsService:
         Аргументы:
             obj_id: int - значение поля `id` записи в БД.
         """
-        return await self._crud.delete(obj_id)
+        return await self.__crud.delete(obj_id)

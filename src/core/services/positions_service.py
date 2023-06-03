@@ -12,11 +12,11 @@ class PositionsService:
     def __init__(
         self, position_crud: Annotated[PositionCRUD, Depends()]
     ) -> None:
-        self._crud = position_crud
+        self.__crud = position_crud
 
     async def get_all(self) -> list[Position]:
         """Возвращает список всех должностей из БД."""
-        return await self._crud.get_all()
+        return await self.__crud.get_all()
 
     async def create_position(
         self, data: PositionCreateRequest
@@ -27,7 +27,7 @@ class PositionsService:
             data: PositionCreateRequest - данные для создания объекта.
         """
         position = Position(**data.dict())
-        return await self._crud.create(position)
+        return await self.__crud.create(position)
 
     async def get_by_id(
         self, obj_id: int
@@ -37,7 +37,7 @@ class PositionsService:
         Аргументы:
             obj_id: int - значение поля `id` записи в БД.
         """
-        return await self._crud.get_or_404(obj_id=obj_id)
+        return await self.__crud.get_or_404(obj_id=obj_id)
 
     async def update_position(
         self, obj_id: int, data: PositionUpdateRequest
@@ -49,7 +49,7 @@ class PositionsService:
             data: PositionUpdateRequest - данные для создания объекта.
         """
         data_dict = data.dict(exclude_unset=True)
-        return await self._crud.update(obj_id, data_dict)
+        return await self.__crud.update(obj_id, data_dict)
 
     async def delete_position(self, obj_id: int) -> None:
         """Удаляет запись с данными должности из БД.
@@ -57,4 +57,4 @@ class PositionsService:
         Аргументы:
             obj_id: int - значение поля `id` записи в БД.
         """
-        return await self._crud.delete(obj_id)
+        return await self.__crud.delete(obj_id)

@@ -1,8 +1,8 @@
 import enum
 from datetime import date, datetime
 
-from sqlalchemy import (TIMESTAMP, CheckConstraint, Enum, Numeric, ForeignKey, String,
-                        func)
+from sqlalchemy import (TIMESTAMP, CheckConstraint, Enum, ForeignKey, Numeric,
+                        String, func)
 from sqlalchemy.ext.declarative import as_declarative, declared_attr  # noqa
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -57,15 +57,22 @@ class User(Base):
     department_id: Mapped[int] = mapped_column(
         ForeignKey('department.id', ondelete='SET NULL'), nullable=True
     )
-    department: Mapped['Department'] = relationship(back_populates='employees')
+    department: Mapped['Department'] = relationship(
+        back_populates='employees', lazy='joined'
+    )
     position_id: Mapped[int] = mapped_column(
         ForeignKey('position.id', ondelete='SET NULL'), nullable=True
     )
-    position: Mapped['Position'] = relationship(back_populates='employees')
-    salary_id: Mapped[int] = mapped_column(
-        ForeignKey('salary.id', ondelete='SET NULL'), nullable=True
+    position: Mapped['Position'] = relationship(
+        back_populates='employees', lazy='joined'
     )
-    salary: Mapped['Salary'] = relationship(back_populates='employee')
+    salary_id: Mapped[int] = mapped_column(
+        ForeignKey('salary.id', ondelete='SET NULL'),
+        nullable=True
+    )
+    salary: Mapped['Salary'] = relationship(
+        back_populates='employee', lazy='joined'
+    )
 
 
 class Salary(Base):
@@ -75,18 +82,26 @@ class Salary(Base):
         CheckConstraint('raise_date >= {}'.format(func.current_timestamp())),
     )
 
-    amount: Mapped[float] = mapped_column(Numeric(9,2), CheckConstraint('amount > 0'))
+    amount: Mapped[float] = mapped_column(
+        Numeric(9, 2), CheckConstraint('amount > 0')
+    )
     raise_date: Mapped[date]
-    employee: Mapped['User'] = relationship(back_populates='salary')
+    employee: Mapped['User'] = relationship(
+        back_populates='salary', lazy='joined'
+    )
 
 
 class Department(Base):
 
     title: Mapped[str] = mapped_column(String(length=256), unique=True)
-    employees: Mapped[list['User']] = relationship(back_populates='department')
+    employees: Mapped[list['User']] = relationship(
+        back_populates='department', lazy='joined'
+    )
 
 
 class Position(Base):
 
     title: Mapped[str] = mapped_column(String(length=100), unique=True)
-    employees: Mapped[list['User']] = relationship(back_populates='position')
+    employees: Mapped[list['User']] = relationship(
+        back_populates='position', lazy='joined'
+    )
