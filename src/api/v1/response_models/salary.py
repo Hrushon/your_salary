@@ -1,14 +1,15 @@
 from datetime import date
 
-from pydantic import BaseModel, condecimal
+from pydantic import BaseModel
 
-from .user import UserResponse
+from .user import UserNestedResponse
 
 
 class SalaryResponse(BaseModel):
-    amount: condecimal(gt=0, max_digits=9, decimal_places=2)
+    id: int
+    amount: float
     raise_date: date
-    empoloyee: UserResponse | None
+    empoloyee: UserNestedResponse | None
 
     class Config:
         orm_mode = True

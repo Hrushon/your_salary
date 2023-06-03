@@ -41,7 +41,9 @@ class BaseCRUD(ABC):
         try:
             await self._session.commit()
         except IntegrityError: # noqa
-            raise custom_exceptions.ObjectAlreadyExistError(instance)
+            raise custom_exceptions.ObjectAlreadyExistError(
+                model=self._model
+            )
 
         await self._session.refresh(instance)
         return instance

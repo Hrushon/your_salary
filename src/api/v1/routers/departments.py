@@ -5,7 +5,8 @@ from fastapi import APIRouter, Depends, Path, status
 from src.api.v1.request_models.department import (DepartmentCreateRequest,
                                                   DepartmentUpdateRequest)
 from src.api.v1.response_models.department import DepartmentResponse
-from src.core.services.departments_servise import DepartmentsService
+from src.api.v1.response_models.error import generate_error_responses
+from src.core.services.departments_service import DepartmentsService
 
 router = APIRouter(
     prefix='/departments',
@@ -36,7 +37,11 @@ async def get_departments(
     '/',
     status_code=status.HTTP_201_CREATED,
     summary='Создать департамент в БД',
-    response_description='Создан департамент в БД'
+    response_description='Создан департамент в БД',
+    responses=generate_error_responses(
+        status.HTTP_400_BAD_REQUEST,
+        status.HTTP_422_UNPROCESSABLE_ENTITY
+    )
 )
 async def create_departament(
     data: DepartmentCreateRequest,
@@ -56,7 +61,11 @@ async def create_departament(
     '/{obj_id}/',
     status_code=status.HTTP_200_OK,
     summary='Получить данные отдельного департамента из БД',
-    response_description='Получены данные департамента из БД'
+    response_description='Получены данные департамента из БД',
+    responses=generate_error_responses(
+        status.HTTP_404_NOT_FOUND,
+        status.HTTP_422_UNPROCESSABLE_ENTITY
+    )
 )
 async def get_departament_by_id(
     obj_id: Annotated[int, Path(description='Значение поля id записи', gt=0)],
@@ -76,7 +85,11 @@ async def get_departament_by_id(
     '/{obj_id}/',
     status_code=status.HTTP_200_OK,
     summary='Обновить данные департамента в БД',
-    response_description='Обновленны данные департамента в БД'
+    response_description='Обновлены данные департамента в БД',
+    responses=generate_error_responses(
+        status.HTTP_404_NOT_FOUND,
+        status.HTTP_422_UNPROCESSABLE_ENTITY
+    )
 )
 async def update_departament(
     obj_id: Annotated[int, Path(description='Значение поля id записи', gt=0)],
@@ -84,7 +97,7 @@ async def update_departament(
     service: Annotated[DepartmentsService, Depends()],
 ) -> DepartmentResponse:
     """
-    Обновляет запись отдельного департамента в базы данных по полю `id`.
+    Обновляет запись отдельного департамента в базе данных по полю `id`.
 
     И возвращает данные обновленного департамента.
 
@@ -99,7 +112,11 @@ async def update_departament(
     '/{obj_id}/',
     status_code=status.HTTP_204_NO_CONTENT,
     summary='Удалить данные департамента из БД',
-    response_description='Удалены данные департамента из БД'
+    response_description='Удалены данные департамента из БД',
+    responses=generate_error_responses(
+        status.HTTP_404_NOT_FOUND,
+        status.HTTP_422_UNPROCESSABLE_ENTITY
+    )
 )
 async def delete_departament(
     obj_id: Annotated[int, Path(description='Значение поля id записи', gt=0)],

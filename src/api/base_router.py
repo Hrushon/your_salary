@@ -9,3 +9,4 @@ router = APIRouter(
 
 router.include_router(routers.checking_router)
 router.include_router(routers.departments_router)
+router.include_router(routers.positions_router)

@@ -1,11 +1,12 @@
 from pydantic import BaseModel
 
-from .user import UserResponse
+from .user import UserNestedResponse
 
 
 class PositionResponse(BaseModel):
+    id: int
     title: str
-    empoloyees: list[UserResponse] | None
+    empoloyees: list[UserNestedResponse] | None
 
     class Config:
         orm_mode = True
