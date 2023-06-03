@@ -2,7 +2,8 @@ from typing import Annotated
 
 from fastapi import Depends
 
-from src.api.v1.request_models.department import DepartmentCreateRequest
+from src.api.v1.request_models.department import (DepartmentCreateRequest,
+                                                  DepartmentUpdateRequest)
 from src.data_base.crud import DepartmentCRUD
 from src.data_base.models import Department
 
@@ -39,13 +40,13 @@ class DepartmentsService:
         return await self._crud.get_or_404(obj_id=obj_id)
 
     async def update_department(
-        self, obj_id: int, data: DepartmentCreateRequest
+        self, obj_id: int, data: DepartmentUpdateRequest
     ) -> Department:
         """Обновляет данные департамента в БД.
 
         Аргументы:
             obj_id: int - значение поля `id` записи в БД,
-            data: DepartmentCreateRequest - данные для создания объекта.
+            data: DepartmentUpdateRequest - данные для создания объекта.
         """
         data_dict = data.dict(exclude_unset=True)
         return await self._crud.update(obj_id, data_dict)

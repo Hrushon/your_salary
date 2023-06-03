@@ -20,7 +20,7 @@ router = APIRouter(
     summary='Получить список всех должностей',
     response_description='Получен список всех должностей'
 )
-async def get_departments(
+async def get_positions(
     service: Annotated[PositionsService, Depends()]
 ) -> list[PositionResponse]:
     """
@@ -52,7 +52,6 @@ async def create_position(
 
     - **id**: уникальный идентификатор записи в БД
     - **title**: название должности
-    - **employees**: список работников с этой должностью
     """
     return await service.create_position(data=data)
 
@@ -60,7 +59,7 @@ async def create_position(
 @router.get(
     '/{obj_id}/',
     status_code=status.HTTP_200_OK,
-    summary='Получить данные отдельной должности департамента из БД',
+    summary='Получить данные отдельной должности из БД',
     response_description='Получены данные должности из БД',
     responses=generate_error_responses(
         status.HTTP_404_NOT_FOUND,
@@ -103,7 +102,6 @@ async def update_position(
 
     - **id**: уникальный идентификатор записи в БД
     - **title**: название должности
-    - **employees**: список работников с этой должностью
     """
     return await service.update_position(obj_id=obj_id, data=data)
 

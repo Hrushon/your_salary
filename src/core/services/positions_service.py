@@ -2,7 +2,8 @@ from typing import Annotated
 
 from fastapi import Depends
 
-from src.api.v1.request_models.position import PositionCreateRequest
+from src.api.v1.request_models.position import (PositionCreateRequest,
+                                                PositionUpdateRequest)
 from src.data_base.crud import PositionCRUD
 from src.data_base.models import Position
 
@@ -25,8 +26,8 @@ class PositionsService:
         Аргументы:
             data: PositionCreateRequest - данные для создания объекта.
         """
-        department = Position(**data.dict())
-        return await self._crud.create(department)
+        position = Position(**data.dict())
+        return await self._crud.create(position)
 
     async def get_by_id(
         self, obj_id: int
@@ -39,13 +40,13 @@ class PositionsService:
         return await self._crud.get_or_404(obj_id=obj_id)
 
     async def update_position(
-        self, obj_id: int, data: PositionCreateRequest
+        self, obj_id: int, data: PositionUpdateRequest
     ) -> Position:
         """Обновляет данные должности в БД.
 
         Аргументы:
             obj_id: int - значение поля `id` записи в БД,
-            data: PositionCreateRequest - данные для создания объекта.
+            data: PositionUpdateRequest - данные для создания объекта.
         """
         data_dict = data.dict(exclude_unset=True)
         return await self._crud.update(obj_id, data_dict)

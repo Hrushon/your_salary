@@ -52,7 +52,6 @@ async def create_departament(
 
     - **id**: уникальный идентификатор записи в БД
     - **title**: название департамента
-    - **employees**: список работников департамента
     """
     return await service.create_department(data=data)
 
@@ -103,7 +102,6 @@ async def update_departament(
 
     - **id**: уникальный идентификатор записи в БД
     - **title**: название департамента
-    - **employees**: список работников департамента
     """
     return await service.update_department(obj_id=obj_id, data=data)
 
