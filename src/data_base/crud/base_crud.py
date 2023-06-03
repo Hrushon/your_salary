@@ -5,7 +5,7 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.core import custom_exceptions
+from src.core.exc import custom_exceptions
 
 ModelType = TypeVar('ModelType')
 

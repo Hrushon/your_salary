@@ -1,6 +1,4 @@
-from http import HTTPStatus
-
-from fastapi import APIRouter
+from fastapi import APIRouter, status
 
 router = APIRouter(
     prefix='/checking',
@@ -10,7 +8,7 @@ router = APIRouter(
 
 @router.get(
     '/hello_api',
-    status_code=HTTPStatus.OK,
+    status_code=status.HTTP_200_OK,
     summary='Проверка работоспособности API',
     response_description='API работает'
 )

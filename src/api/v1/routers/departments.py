@@ -1,7 +1,6 @@
-from http import HTTPStatus
 from typing import Annotated
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, status
 
 from src.api.v1.request_models.department import (DepartmentCreateRequest,
                                                   DepartmentUpdateRequest)
@@ -16,7 +15,7 @@ router = APIRouter(
 
 @router.get(
     '/',
-    status_code=HTTPStatus.OK,
+    status_code=status.HTTP_200_OK,
     summary='Получить список всех департаментов',
     response_description='Получен список всех департаментов'
 )
@@ -28,7 +27,7 @@ async def get_departments(
 
 @router.post(
     '/',
-    status_code=HTTPStatus.CREATED,
+    status_code=status.HTTP_201_CREATED,
     summary='Создать департамент в БД',
     response_description='Создан департамент в БД'
 )
@@ -41,7 +40,7 @@ async def create_departament(
 
 @router.patch(
     '/{obj_id}/',
-    status_code=HTTPStatus.OK,
+    status_code=status.HTTP_200_OK,
     summary='Обновить данные департамента в БД',
     response_description='Обновленны данные департамента в БД'
 )
@@ -55,7 +54,7 @@ async def update_departament(
 
 @router.delete(
     '/{obj_id}/',
-    status_code=HTTPStatus.NO_CONTENT,
+    status_code=status.HTTP_204_NO_CONTENT,
     summary='Удалить данные департамента из БД',
     response_description='Удалены данные департамента из БД'
 )

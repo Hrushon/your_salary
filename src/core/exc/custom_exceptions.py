@@ -1,5 +1,6 @@
-from http import HTTPStatus
 from typing import TypeVar
+
+from fastapi import status
 
 ModelType = TypeVar('ModelType')
 
@@ -11,12 +12,12 @@ class AppBaseError(Exception):
 
 
 class BadRequestError(AppBaseError):
-    status_code: HTTPStatus = HTTPStatus.BAD_REQUEST
+    status_code: status = status.HTTP_400_BAD_REQUEST
     detail: str = 'Неверный запрос'
 
 
 class NotFoundError(AppBaseError):
-    status_code: HTTPStatus = HTTPStatus.NOT_FOUND
+    status_code: status = status.HTTP_404_NOT_FOUND
     detail: str = 'Объект не найден'
 
 
