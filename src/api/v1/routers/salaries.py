@@ -10,7 +10,7 @@ from src.core.services.salaries_service import SalariesService
 
 router = APIRouter(
     prefix='/salaries',
-    tags=['Заработная плата'],
+    tags=['Заработные платы'],
 )
 
 

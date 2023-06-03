@@ -10,7 +10,7 @@ from src.core.services.departments_service import DepartmentsService
 
 router = APIRouter(
     prefix='/departments',
-    tags=['Департамент'],
+    tags=['Департаменты'],
 )
 
 

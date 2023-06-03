@@ -1,8 +1,4 @@
-from pydantic import Field, PastDate, SecretStr, StrictStr
-
-from api.v1.response_models.department import Department
-from api.v1.response_models.position import Position
-from api.v1.response_models.salary import Salary
+from pydantic import Field, PastDate, PositiveInt, SecretStr, StrictStr
 
 from .base_request import BaseRequest
 from .validators import first_and_last_name_validator, username_validator
@@ -21,15 +17,27 @@ class UserCreateRequest(BaseRequest):
     first_name: StrictStr = Field(min_length=2, max_length=150)
     last_name: StrictStr = Field(min_length=2, max_length=150)
     username: StrictStr = Field(min_length=2, max_length=150)
-    password: SecretStr
+    password: StrictStr
     date_of_birth: PastDate
-    department: Department.id | None
-    position: Position.id | None
-    salary: Salary.id | None
+    department_id: PositiveInt | None
+    position_id: PositiveInt | None
+    salary_id: PositiveInt | None
 
     _validate_first_name = first_and_last_name_validator('first_name')
     _validate_last_name = first_and_last_name_validator('last_name')
     _validate_pusername = username_validator('username')
+
+
+class UserUpdateRequest(BaseRequest):
+    first_name: StrictStr | None = Field(min_length=2, max_length=150)
+    last_name: StrictStr | None = Field(min_length=2, max_length=150)
+    date_of_birth: PastDate | None
+    department_id: PositiveInt | None
+    position_id: PositiveInt | None
+    salary_id: PositiveInt | None
+
+    _validate_first_name = first_and_last_name_validator('first_name')
+    _validate_last_name = first_and_last_name_validator('last_name')
 
 
 class UserAuthenticateRequest(BaseRequest):

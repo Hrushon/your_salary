@@ -10,9 +10,9 @@ from src.data_base.models import Salary
 
 class SalariesService:
     def __init__(
-        self, position_crud: Annotated[SalaryCRUD, Depends()]
+        self, salary_crud: Annotated[SalaryCRUD, Depends()]
     ) -> None:
-        self._crud = position_crud
+        self._crud = salary_crud
 
     async def get_all(self) -> list[Salary]:
         """Возвращает список всех заработных плат из БД."""

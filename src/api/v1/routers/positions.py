@@ -10,7 +10,7 @@ from src.core.services.positions_service import PositionsService
 
 router = APIRouter(
     prefix='/positions',
-    tags=['Должность'],
+    tags=['Должности'],
 )
 
 
