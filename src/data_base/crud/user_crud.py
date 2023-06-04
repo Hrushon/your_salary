@@ -43,11 +43,8 @@ class UserCRUD(BaseCRUD):
             username: str - никнейм/логин пользователя
             status: User.Status - статус пользователя
         """
-        user_exists = await self._session.scalars(select(
-            select(self._model).where(
-                (self._model.username == username)
-                & (status is None)
-                | (self._model.status == status)
-            ).exists()
-        ))
+        query = select(self._model).where(self._model.username == username)
+        if status:
+            query.where(self._model.status == status)
+        user_exists = await self._session.scalars(select(query.exists()))
         return user_exists.first()
