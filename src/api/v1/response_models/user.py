@@ -5,13 +5,19 @@ from pydantic import BaseModel
 from src.data_base.models import User
 
 
-class Token(BaseModel):
+class TokenResponse(BaseModel):
     access_token: str
-    token_type: str
+    token_type: str = 'bearer'
+
+    class Config:
+        orm_mode = True
 
 
-class TokenData(BaseModel):
+class TokenDataResponse(BaseModel):
     username: str | None = None
+
+    class Config:
+        orm_mode = True
 
 
 class DepartmentInUserResponse(BaseModel):
@@ -65,8 +71,7 @@ class UserNestedResponse(BaseModel):
         orm_mode = True
 
 
-class UserInDB(UserResponse):
-    password: str
+class UserAndAccessTokenResponse(TokenResponse, UserResponse):
 
     class Config:
         orm_mode = True

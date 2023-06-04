@@ -6,7 +6,7 @@ from src.api.v1.request_models.salary import (SalaryCreateRequest,
                                               SalaryUpdateRequest)
 from src.api.v1.response_models.error import generate_error_responses
 from src.api.v1.response_models.salary import SalaryResponse
-from src.core.services.salaries_service import SalariesService
+from src.core.services.salary_service import SalaryService
 
 router = APIRouter(
     prefix='/salaries',
@@ -21,7 +21,7 @@ router = APIRouter(
     response_description='Получен список всех заработных плат'
 )
 async def get_salaries(
-    service: Annotated[SalariesService, Depends()]
+    service: Annotated[SalaryService, Depends()]
 ) -> list[SalaryResponse]:
     """
     Возвращает список всех заработных плат из базы данных.
@@ -46,7 +46,7 @@ async def get_salaries(
 )
 async def create_salary(
     data: SalaryCreateRequest,
-    service: Annotated[SalariesService, Depends()],
+    service: Annotated[SalaryService, Depends()],
 ) -> SalaryResponse:
     """
     Создает запись новой заработной платы в базе данных.
@@ -70,7 +70,7 @@ async def create_salary(
 )
 async def get_salary_by_id(
     obj_id: Annotated[int, Path(description='Значение поля id записи', gt=0)],
-    service: Annotated[SalariesService, Depends()],
+    service: Annotated[SalaryService, Depends()],
 ) -> SalaryResponse:
     """
     Возвращает запись отдельной заработной платы из базы данных по полю `id`.
@@ -96,7 +96,7 @@ async def get_salary_by_id(
 async def update_salary(
     obj_id: Annotated[int, Path(description='Значение поля id записи', gt=0)],
     data: SalaryUpdateRequest,
-    service: Annotated[SalariesService, Depends()],
+    service: Annotated[SalaryService, Depends()],
 ) -> SalaryResponse:
     """
     Обновляет запись отдельной заработной платы в базе данных по полю `id`.
@@ -122,7 +122,7 @@ async def update_salary(
 )
 async def delete_salary(
     obj_id: Annotated[int, Path(description='Значение поля id записи', gt=0)],
-    service: Annotated[SalariesService, Depends()],
+    service: Annotated[SalaryService, Depends()],
 ) -> None:
     """Удаляет запись отдельной зарплаты из базы данных по полю `id`."""
     return await service.delete_salary(obj_id=obj_id)

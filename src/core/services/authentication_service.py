@@ -1,96 +1,152 @@
 from datetime import datetime, timedelta
 from typing import Annotated
 
-from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
-from passlib.context import CryptContext
+from fastapi import Depends
+from fastapi.security import HTTPAuthorizationCredentials
 from jose import JWTError, jwt
+from passlib.context import CryptContext
 
-from api.v1.response_models.users import User, TokenData, UserInDB
-from src.core import settings
+from src.api.v1.request_models.user import UserAuthenticateRequest
+from src.api.v1.response_models.user import UserResponse
+from src.core.exc import custom_exceptions
+from src.core.settings import settings
+from src.data_base.crud import UserCRUD
+from src.data_base.DTO_models import UserAndTokenDTO
+from src.data_base.models import User
 
 ALGORITHM: str = 'HS256'
 ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7
 PASSWORD_CONTEXT: CryptContext = CryptContext(
     schemes=["bcrypt"], deprecated="auto"
 )
-OAUTH2_SCHEME: OAuth2PasswordBearer = OAuth2PasswordBearer(tokenUrl="token")
 
 
-def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """Проверяет правильность введенного пароля сравнением с хешированным."""
-    return PASSWORD_CONTEXT.verify(plain_password, hashed_password)
+class AuthenticationService:
+    def __init__(
+        self,
+        user_crud: Annotated[UserCRUD, Depends()]
+    ) -> None:
+        self.__crud = user_crud
 
+    @staticmethod
+    def get_password_hash(password: str) -> str:
+        """Хеширует пароль."""
+        return PASSWORD_CONTEXT.hash(password)
 
-def get_password_hash(password: str) -> str:
-    """Хеширует пароль."""
-    return PASSWORD_CONTEXT.hash(password)
+    @staticmethod
+    def get_username_from_token(token: str) -> str:
+        """Декодирует JWT-токен и возвращает `username`.
 
+        Аргументы:
+            token: str - JWT-токен
+        """
+        try:
+            payload = jwt.decode(
+                token, settings.SECRET_KEY, algorithms=[ALGORITHM]
+            )
+        except JWTError:
+            raise custom_exceptions.UnauthorizedError
+        username = payload.get('username')
+        if not username:
+            raise custom_exceptions.UnauthorizedError
+        return username
 
-def get_user(db, username: str):
+    def __verify_password(
+        self, plain_password: str, hashed_password: str
+    ) -> bool:
+        """Проверяет правильность введенного пароля сравнением с хешированным.
 
-    if username in db:
-        user_dict = db[username]
-        return UserInDB(**user_dict)
+        Аргументы:
+            plain_password: str - введенный пароль
+            hashed_password: str - хешированный пароль
+        """
+        return PASSWORD_CONTEXT.verify(plain_password, hashed_password)
 
+    async def __authenticate_user(
+        self, auth_data: UserAuthenticateRequest
+    ) -> UserResponse:
+        """Аутентифицирует пользователя по `username` и `password` полям.
 
-def authenticate_user(db, username: str, password: str) -> User:
-    """Аутентифицирует пользователя по `username` и `password` полям."""
-    user = db.get_user(username)
-    if not user or user.is_blocked:
-        return False
-    if not verify_password(password, user.password):
-        return False
-    return user
+        Аргументы:
+            auth_data: UserAuthenticateRequest - схема для аутентификации
+        """
+        user = await self.__crud.get_by_username(username=auth_data.username)
+        if user.is_blocked:
+            raise custom_exceptions.UserBlockedError
+        password = auth_data.password.get_secret_value()
+        if not self.__verify_password(password, user.password):
+            return custom_exceptions.InvalidAuthenticationDataError
+        return user
 
+    def __create_token(
+        self, username: str, expires_delta: timedelta | None = None
+    ) -> str:
+        """Создает access-токен.
 
-def create_token(data: dict, expires_delta: timedelta | None = None) -> str:
-    """Создает access-токен."""
-    to_encode = data.copy()
-    if expires_delta:
-        expire = datetime.utcnow() + expires_delta
-    else:
-        expire = datetime.utcnow() + timedelta(minutes=15)
-    to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(
-        to_encode, settings.SECRET_KEY, algorithm=ALGORITHM
-    )
-    return encoded_jwt
-
-
-async def get_current_user(token: Annotated[str, Depends(OAUTH2_SCHEME)]) -> UserInDB:
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
-    try:
-        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[ALGORITHM])
-        username: str = payload.get("sub")
-        if username is None:
-            raise credentials_exception
-        token_data = TokenData(username=username)
-    except JWTError:
-        raise credentials_exception
-    user = get_user(db, username=token_data.username)
-    if user is None:
-        raise credentials_exception
-    return user
-
-
-@app.post("/token", response_model=Token)
-async def login_for_access_token(
-    form_data: Annotated[OAuth2PasswordRequestForm, Depends()]
-):
-    user = authenticate_user(fake_users_db, form_data.username, form_data.password)
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password",
-            headers={"WWW-Authenticate": "Bearer"},
+        Аргументы:
+            username: str - никнейм/логин пользователя
+            expires_delta: int - время жизни токена
+        """
+        if expires_delta:
+            expire = datetime.utcnow() + timedelta(minutes=expires_delta)
+        else:
+            expire = datetime.utcnow() + timedelta(minutes=15)
+        to_encode = {'username': username, 'exp': expire}
+        return jwt.encode(
+            to_encode, settings.SECRET_KEY, algorithm=ALGORITHM
         )
-    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = create_access_token(
-        data={"sub": user.username}, expires_delta=access_token_expires
-    )
-    return {"access_token": access_token, "token_type": "bearer"}
+
+    async def login_user(
+        self, auth_data: UserAuthenticateRequest
+    ) -> UserAndTokenDTO:
+        """Аутентифицирует пользователя по `username` и `password` полям.
+
+        Возвращает информацию об администраторе и `access`- токен.
+
+        Аргументы:
+            auth_data: UserAuthenticateRequest - схема для аутентификации
+        """
+        user = await self.__authenticate_user(auth_data=auth_data)
+        return UserAndTokenDTO(
+            access_token=self.__create_token(
+                username=auth_data.username,
+                expires_delta=ACCESS_TOKEN_EXPIRE_MINUTES
+            ),
+            user=user
+        )
+
+    async def get_current_user(
+        self, token: HTTPAuthorizationCredentials
+    ) -> UserResponse:
+        """Возвращает текущего пользователя по токену.
+
+        Аргументы:
+            token: HTTPAuthorizationCredentials - схема авторизации
+        """
+        username = self.get_username_from_token(token=token.credentials)
+        user = await self.__crud.get_by_username(username=username)
+        if user.is_blocked:
+            raise custom_exceptions.UserBlockedError
+        return user
+
+    async def check_current_user_exists(
+        self,
+        token: HTTPAuthorizationCredentials,
+        status: User.Status | None = None
+    ) -> None:
+        """Производит авторизацию пользователя по токену.
+
+        Выбрасывает исключение если пользователь не обнаружен.
+        Если определен аргумент `status` - пользователь дополнительно
+        проверяется на наличие данного статуса.
+
+        Аргументы:
+            token: HTTPAuthorizationCredentials - схема авторизации
+            status: User.Status - статус пользователя
+        """
+        username = self.get_username_from_token(token=token.credentials)
+        if status and status not in User.Status._member_names_:
+            raise custom_exceptions.UserUnknownStatusError(status)
+        user_exists = await self.__crud.is_user_exists(username, status)
+        if not user_exists:
+            raise custom_exceptions.ForbiddenError

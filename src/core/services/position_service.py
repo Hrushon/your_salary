@@ -8,7 +8,7 @@ from src.data_base.crud import PositionCRUD
 from src.data_base.models import Position
 
 
-class PositionsService:
+class PositionService:
     def __init__(
         self, position_crud: Annotated[PositionCRUD, Depends()]
     ) -> None:

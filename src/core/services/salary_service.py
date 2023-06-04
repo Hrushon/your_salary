@@ -8,7 +8,7 @@ from src.data_base.crud import SalaryCRUD
 from src.data_base.models import Salary
 
 
-class SalariesService:
+class SalaryService:
     def __init__(
         self, salary_crud: Annotated[SalaryCRUD, Depends()]
     ) -> None:

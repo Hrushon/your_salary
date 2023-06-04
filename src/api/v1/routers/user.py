@@ -1,11 +1,15 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Path, status
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
-from src.api.v1.request_models.user import UserCreateRequest, UserUpdateRequest
+from src.api.v1.request_models.user import (UserAuthenticateRequest,
+                                            UserCreateRequest,
+                                            UserUpdateRequest)
 from src.api.v1.response_models.error import generate_error_responses
-from src.api.v1.response_models.user import UserResponse
-from src.core.services.users_service import UsersService
+from src.api.v1.response_models.user import (UserAndAccessTokenResponse,
+                                             UserResponse)
+from src.core.services.user_service import AuthenticationService, UserService
 
 router = APIRouter(
     prefix='/employees',
@@ -13,14 +17,50 @@ router = APIRouter(
 )
 
 
+async def auth_check(
+    token: Annotated[HTTPAuthorizationCredentials, Depends(HTTPBearer())],
+    auth_service: Annotated[AuthenticationService, Depends()]
+) -> None:
+    return await auth_service.check_current_user_exists(token)
+
+
+@router.post(
+    "/login",
+    status_code=status.HTTP_200_OK,
+    summary='Выполнить аутентификацию',
+    response_description='Аутентификация выполнена',
+    responses=generate_error_responses(
+        status.HTTP_400_BAD_REQUEST,
+        status.HTTP_403_FORBIDDEN
+    )
+)
+async def login(
+    auth_data: UserAuthenticateRequest,
+    auth_service: Annotated[AuthenticationService, Depends()]
+) -> UserAndAccessTokenResponse:
+    """Аутентифицировать работника по `username` и паролю.
+
+    Вернуть access-токен и информацию о работнике.
+    - **username**: логин/никнейм работника
+    - **password**: пароль
+    """
+    user_and_token = await auth_service.login_user(auth_data=auth_data)
+    user_and_token.user.access_token = user_and_token.access_token
+    return user_and_token.user
+
+
 @router.get(
     '/',
     status_code=status.HTTP_200_OK,
     summary='Получить список всех работников',
-    response_description='Получен список всех работников'
+    response_description='Получен список всех работников',
+    responses=generate_error_responses(
+        status.HTTP_403_FORBIDDEN,
+    )
 )
 async def get_users(
-    service: Annotated[UsersService, Depends()]
+    user_service: Annotated[UserService, Depends()],
+    auth_check: Annotated[None, Depends(auth_check)]
 ) -> list[UserResponse]:
     """
     Возвращает список всех работников из базы данных.
@@ -36,7 +76,7 @@ async def get_users(
     - **position**: должность работника
     - **salary**: заработная плата работника
     """
-    return await service.get_all()
+    return await user_service.get_all()
 
 
 @router.post(
@@ -51,7 +91,7 @@ async def get_users(
 )
 async def create_user(
     data: UserCreateRequest,
-    service: Annotated[UsersService, Depends()],
+    service: Annotated[UserService, Depends()],
 ) -> UserResponse:
     """
     Создает запись нового работника в базе данных.
@@ -80,7 +120,7 @@ async def create_user(
 )
 async def get_user_by_id(
     obj_id: Annotated[int, Path(description='Значение поля id записи', gt=0)],
-    service: Annotated[UsersService, Depends()],
+    service: Annotated[UserService, Depends()],
 ) -> UserResponse:
     """
     Возвращает запись отдельного работника из базы данных по полю `id`.
@@ -112,13 +152,12 @@ async def get_user_by_id(
 async def update_user(
     obj_id: Annotated[int, Path(description='Значение поля id записи', gt=0)],
     data: UserUpdateRequest,
-    service: Annotated[UsersService, Depends()],
+    service: Annotated[UserService, Depends()],
 ) -> UserResponse:
     """
     Обновляет запись отдельного работника в базе данных по полю `id`.
 
     И возвращает данные обновленной записи.
-
     - **id**: уникальный идентификатор записи в БД
     - **first_name**: имя работника
     - **last_name**: фамилия работника
@@ -143,7 +182,7 @@ async def update_user(
 )
 async def delete_user(
     obj_id: Annotated[int, Path(description='Значение поля id записи', gt=0)],
-    service: Annotated[UsersService, Depends()],
+    service: Annotated[UserService, Depends()],
 ) -> None:
     """Удаляет запись отдельного работника из базы данных по полю `id`."""
     return await service.delete_user(obj_id=obj_id)

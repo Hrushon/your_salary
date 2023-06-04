@@ -8,7 +8,7 @@ from src.data_base.crud import DepartmentCRUD
 from src.data_base.models import Department
 
 
-class DepartmentsService:
+class DepartmentService:
     def __init__(
         self, department_crud: Annotated[DepartmentCRUD, Depends()]
     ) -> None:

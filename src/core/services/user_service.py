@@ -3,12 +3,13 @@ from typing import Annotated
 from fastapi import Depends
 
 from src.api.v1.request_models.user import UserCreateRequest, UserUpdateRequest
+from src.core.services.authentication_service import AuthenticationService
 from src.data_base.crud import (DepartmentCRUD, PositionCRUD, SalaryCRUD,
                                 UserCRUD)
 from src.data_base.models import User
 
 
-class UsersService:
+class UserService:
     def __init__(
         self,
         user_crud: Annotated[UserCRUD, Depends()],
@@ -55,6 +56,9 @@ class UsersService:
         Аргументы:
             data: UserCreateRequest - данные для создания объекта.
         """
+        data.password = AuthenticationService.get_password_hash(
+            password=data.password.get_secret_value()
+        )
         data = await self.__get_nested_instances(data=data)
         user = User(**data.dict())
         return await self.__crud.create(user)

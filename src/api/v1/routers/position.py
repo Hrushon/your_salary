@@ -6,7 +6,7 @@ from src.api.v1.request_models.position import (PositionCreateRequest,
                                                 PositionUpdateRequest)
 from src.api.v1.response_models.error import generate_error_responses
 from src.api.v1.response_models.position import PositionResponse
-from src.core.services.positions_service import PositionsService
+from src.core.services.position_service import PositionService
 
 router = APIRouter(
     prefix='/positions',
@@ -21,7 +21,7 @@ router = APIRouter(
     response_description='Получен список всех должностей'
 )
 async def get_positions(
-    service: Annotated[PositionsService, Depends()]
+    service: Annotated[PositionService, Depends()]
 ) -> list[PositionResponse]:
     """
     Возвращает список всех должностей из базы данных.
@@ -45,7 +45,7 @@ async def get_positions(
 )
 async def create_position(
     data: PositionCreateRequest,
-    service: Annotated[PositionsService, Depends()],
+    service: Annotated[PositionService, Depends()],
 ) -> PositionResponse:
     """
     Создает запись новой должности в базе данных.
@@ -68,7 +68,7 @@ async def create_position(
 )
 async def get_position_by_id(
     obj_id: Annotated[int, Path(description='Значение поля id записи', gt=0)],
-    service: Annotated[PositionsService, Depends()],
+    service: Annotated[PositionService, Depends()],
 ) -> PositionResponse:
     """
     Возвращает запись отдельной должности из базы данных по полю `id`.
@@ -93,7 +93,7 @@ async def get_position_by_id(
 async def update_position(
     obj_id: Annotated[int, Path(description='Значение поля id записи', gt=0)],
     data: PositionUpdateRequest,
-    service: Annotated[PositionsService, Depends()],
+    service: Annotated[PositionService, Depends()],
 ) -> PositionResponse:
     """
     Обновляет запись отдельной должности в базе данных по полю `id`.
@@ -118,7 +118,7 @@ async def update_position(
 )
 async def delete_position(
     obj_id: Annotated[int, Path(description='Значение поля id записи', gt=0)],
-    service: Annotated[PositionsService, Depends()],
+    service: Annotated[PositionService, Depends()],
 ) -> None:
     """Удаляет запись отдельной должности из базы данных по полю `id`."""
     return await service.delete_position(obj_id=obj_id)

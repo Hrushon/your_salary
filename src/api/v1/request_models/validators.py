@@ -8,7 +8,7 @@ F_L_NAME_TEXT_ERROR = (
     'или `-`. Поле `{field_name}` должно начинаться с заглавной буквы.'
 )
 
-VALID_USERNAME = r'^[A-z]+$'
+VALID_USERNAME = r'^[A-z][A-z0-9]+$'
 USERNAME_TEXT_ERROR = ('В поле `{field_name}` могут быть использованы только '
                        'буквы английского алфавита.')
 

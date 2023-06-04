@@ -6,7 +6,7 @@ from src.api.v1.request_models.department import (DepartmentCreateRequest,
                                                   DepartmentUpdateRequest)
 from src.api.v1.response_models.department import DepartmentResponse
 from src.api.v1.response_models.error import generate_error_responses
-from src.core.services.departments_service import DepartmentsService
+from src.core.services.department_service import DepartmentService
 
 router = APIRouter(
     prefix='/departments',
@@ -21,7 +21,7 @@ router = APIRouter(
     response_description='Получен список всех департаментов'
 )
 async def get_departments(
-    service: Annotated[DepartmentsService, Depends()]
+    service: Annotated[DepartmentService, Depends()]
 ) -> list[DepartmentResponse]:
     """
     Возвращает список всех департаментов из базы данных.
@@ -45,7 +45,7 @@ async def get_departments(
 )
 async def create_departament(
     data: DepartmentCreateRequest,
-    service: Annotated[DepartmentsService, Depends()],
+    service: Annotated[DepartmentService, Depends()],
 ) -> DepartmentResponse:
     """
     Создает запись нового департамента в базе данных.
@@ -68,7 +68,7 @@ async def create_departament(
 )
 async def get_departament_by_id(
     obj_id: Annotated[int, Path(description='Значение поля id записи', gt=0)],
-    service: Annotated[DepartmentsService, Depends()],
+    service: Annotated[DepartmentService, Depends()],
 ) -> DepartmentResponse:
     """
     Возвращает запись отдельного департамента из базы данных по полю `id`.
@@ -93,7 +93,7 @@ async def get_departament_by_id(
 async def update_departament(
     obj_id: Annotated[int, Path(description='Значение поля id записи', gt=0)],
     data: DepartmentUpdateRequest,
-    service: Annotated[DepartmentsService, Depends()],
+    service: Annotated[DepartmentService, Depends()],
 ) -> DepartmentResponse:
     """
     Обновляет запись отдельного департамента в базе данных по полю `id`.
@@ -118,7 +118,7 @@ async def update_departament(
 )
 async def delete_departament(
     obj_id: Annotated[int, Path(description='Значение поля id записи', gt=0)],
-    service: Annotated[DepartmentsService, Depends()],
+    service: Annotated[DepartmentService, Depends()],
 ) -> None:
     """Удаляет запись отдельного департамента из базы данных по полю `id`."""
     return await service.delete_department(obj_id=obj_id)
