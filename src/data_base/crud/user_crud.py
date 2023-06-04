@@ -48,3 +48,17 @@ class UserCRUD(BaseCRUD):
             query.where(self._model.status == status)
         user_exists = await self._session.scalars(select(query.exists()))
         return user_exists.first()
+
+    async def update_by_self(self, obj: User, data: dict) -> User:
+        """Обновляет данные полученного объекта модели в БД.
+
+        Аргументы:
+            obj: User - объект данных пользователя
+            data: dict - данные пользователя
+        """
+        for key, value in data.items():
+            setattr(obj, key, value)
+        self._session.add(obj)
+        await self._session.commit()
+        await self._session.refresh(obj)
+        return obj

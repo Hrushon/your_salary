@@ -5,6 +5,7 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from src.api.v1.request_models.user import (UserAuthenticateRequest,
                                             UserCreateRequest,
+                                            UserSelfUpdateRequest,
                                             UserUpdateRequest)
 from src.api.v1.response_models.error import generate_error_responses
 from src.api.v1.response_models.user import (UserAndAccessTokenResponse,
@@ -21,11 +22,11 @@ async def auth_check(
     token: Annotated[HTTPAuthorizationCredentials, Depends(HTTPBearer())],
     auth_service: Annotated[AuthenticationService, Depends()]
 ) -> None:
-    return await auth_service.check_current_user_exists(token)
+    return await auth_service.check_current_user_exists(token=token)
 
 
 @router.post(
-    "/login",
+    "/login/",
     status_code=status.HTTP_200_OK,
     summary='Выполнить аутентификацию',
     response_description='Аутентификация выполнена',
@@ -56,11 +57,11 @@ async def login(
     response_description='Получен список всех работников',
     responses=generate_error_responses(
         status.HTTP_403_FORBIDDEN,
-    )
+    ),
+    dependencies=(Depends(auth_check),)
 )
 async def get_users(
-    user_service: Annotated[UserService, Depends()],
-    auth_check: Annotated[None, Depends(auth_check)]
+    user_service: Annotated[UserService, Depends()]
 ) -> list[UserResponse]:
     """
     Возвращает список всех работников из базы данных.
@@ -91,7 +92,7 @@ async def get_users(
 )
 async def create_user(
     data: UserCreateRequest,
-    service: Annotated[UserService, Depends()],
+    user_service: Annotated[UserService, Depends()]
 ) -> UserResponse:
     """
     Создает запись нового работника в базе данных.
@@ -105,7 +106,7 @@ async def create_user(
     - **position_id**: идентификатор должности работника
     - **salary_id**: идентификатор заработной плата работника
     """
-    return await service.create_user(data=data)
+    return await user_service.create_user(data=data)
 
 
 @router.get(
@@ -116,11 +117,12 @@ async def create_user(
     responses=generate_error_responses(
         status.HTTP_404_NOT_FOUND,
         status.HTTP_422_UNPROCESSABLE_ENTITY
-    )
+    ),
+    dependencies=(Depends(auth_check),)
 )
 async def get_user_by_id(
     obj_id: Annotated[int, Path(description='Значение поля id записи', gt=0)],
-    service: Annotated[UserService, Depends()],
+    user_service: Annotated[UserService, Depends()]
 ) -> UserResponse:
     """
     Возвращает запись отдельного работника из базы данных по полю `id`.
@@ -136,7 +138,76 @@ async def get_user_by_id(
     - **position**: должность работника
     - **salary**: заработная плата работника
     """
-    return await service.get_by_id(obj_id=obj_id)
+    return await user_service.get_by_id(obj_id=obj_id)
+
+
+@router.get(
+    '/me/',
+    status_code=status.HTTP_200_OK,
+    summary='Получить работником собственных данных из БД',
+    response_description='Получены данные работником',
+    responses=generate_error_responses(
+        status.HTTP_404_NOT_FOUND,
+        status.HTTP_403_FORBIDDEN,
+        status.HTTP_401_UNAUTHORIZED
+    )
+)
+async def get_user_by_self(
+    token: Annotated[HTTPAuthorizationCredentials, Depends(HTTPBearer())],
+    auth_service: Annotated[AuthenticationService, Depends()],
+) -> UserResponse:
+    """
+    Возвращает пользователю запись c его данными из базы.
+
+    - **id**: уникальный идентификатор записи в БД
+    - **first_name**: имя работника
+    - **last_name**: фамилия работника
+    - **username**: логин/никнейм работника
+    - **date_of_birth**: день рождения работника
+    - **is_blocked**: блокировка работника
+    - **status**: статус работника
+    - **department**: отдел в котором работает работник
+    - **position**: должность работника
+    - **salary**: заработная плата работника
+    """
+    return await auth_service.get_current_user(token=token)
+
+
+@router.patch(
+    '/me/',
+    status_code=status.HTTP_200_OK,
+    summary='Обновление работником собственных данных в БД',
+    response_description='Обновлены данные работником',
+    responses=generate_error_responses(
+        status.HTTP_404_NOT_FOUND,
+        status.HTTP_403_FORBIDDEN,
+        status.HTTP_401_UNAUTHORIZED,
+        status.HTTP_422_UNPROCESSABLE_ENTITY
+    )
+)
+async def update_by_user_himself(
+    data: UserSelfUpdateRequest,
+    token: Annotated[HTTPAuthorizationCredentials, Depends(HTTPBearer())],
+    user_service: Annotated[UserService, Depends()],
+    auth_service: Annotated[AuthenticationService, Depends()]
+) -> UserResponse:
+    """
+    Обновляет coбственную запись работника в базе данных.
+
+    И возвращает данные обновленной записи.
+    - **id**: уникальный идентификатор записи в БД
+    - **first_name**: имя работника
+    - **last_name**: фамилия работника
+    - **username**: логин/никнейм работника
+    - **date_of_birth**: день рождения работника
+    - **is_blocked**: блокировка работника
+    - **status**: статус работника
+    - **department**: отдел в котором работает работник
+    - **position**: должность работника
+    - **salary**: заработная плата работника
+    """
+    user = await auth_service.get_current_user(token=token)
+    return await user_service.update_user_himself(data=data, user_obj=user)
 
 
 @router.patch(
@@ -147,12 +218,13 @@ async def get_user_by_id(
     responses=generate_error_responses(
         status.HTTP_404_NOT_FOUND,
         status.HTTP_422_UNPROCESSABLE_ENTITY
-    )
+    ),
+    dependencies=(Depends(auth_check),)
 )
 async def update_user(
     obj_id: Annotated[int, Path(description='Значение поля id записи', gt=0)],
     data: UserUpdateRequest,
-    service: Annotated[UserService, Depends()],
+    user_service: Annotated[UserService, Depends()]
 ) -> UserResponse:
     """
     Обновляет запись отдельного работника в базе данных по полю `id`.
@@ -167,7 +239,7 @@ async def update_user(
     - **position_id**: идентификатор должности работника
     - **salary_id**: идентификатор заработной плата работника
     """
-    return await service.update_user(obj_id=obj_id, data=data)
+    return await user_service.update_user(obj_id=obj_id, data=data)
 
 
 @router.delete(
@@ -178,11 +250,12 @@ async def update_user(
     responses=generate_error_responses(
         status.HTTP_404_NOT_FOUND,
         status.HTTP_422_UNPROCESSABLE_ENTITY
-    )
+    ),
+    dependencies=(Depends(auth_check),)
 )
 async def delete_user(
     obj_id: Annotated[int, Path(description='Значение поля id записи', gt=0)],
-    service: Annotated[UserService, Depends()],
+    user_service: Annotated[UserService, Depends()]
 ) -> None:
     """Удаляет запись отдельного работника из базы данных по полю `id`."""
-    return await service.delete_user(obj_id=obj_id)
+    return await user_service.delete_user(obj_id=obj_id)

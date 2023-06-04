@@ -2,7 +2,9 @@ from typing import Annotated
 
 from fastapi import Depends
 
-from src.api.v1.request_models.user import UserCreateRequest, UserUpdateRequest
+from src.api.v1.request_models.user import (UserCreateRequest,
+                                            UserSelfUpdateRequest,
+                                            UserUpdateRequest)
 from src.core.services.authentication_service import AuthenticationService
 from src.data_base.crud import (DepartmentCRUD, PositionCRUD, SalaryCRUD,
                                 UserCRUD)
@@ -85,6 +87,21 @@ class UserService:
         data = await self.__get_nested_instances(data=data)
         data_dict = data.dict(exclude_unset=True)
         return await self.__crud.update(obj_id, data_dict)
+
+    async def update_user_himself(
+        self,
+        data: UserSelfUpdateRequest,
+        user_obj: User
+    ) -> User:
+        """Обновляет данные записи с пользователем в БД.
+
+        Аргументы:
+            user_obj: User - объект пользователя,
+            data: UserUpdateRequest - данные для создания объекта.
+        """
+        data = await self.__get_nested_instances(data=data)
+        data_dict = data.dict(exclude_unset=True)
+        return await self.__crud.update_by_self(obj=user_obj, data=data_dict)
 
     async def delete_user(self, obj_id: int) -> None:
         """Удаляет запись с данными пользователя из БД.
