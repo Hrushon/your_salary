@@ -13,13 +13,6 @@ class TokenResponse(BaseModel):
         orm_mode = True
 
 
-class TokenDataResponse(BaseModel):
-    username: str | None = None
-
-    class Config:
-        orm_mode = True
-
-
 class DepartmentInUserResponse(BaseModel):
     id: int
     title: str
@@ -40,6 +33,18 @@ class SalaryInUserResponse(BaseModel):
 class PositionInUserResponse(BaseModel):
     id: int
     title: str
+
+    class Config:
+        orm_mode = True
+
+
+class UserShortResponse(BaseModel):
+    id: int
+    first_name: str
+    last_name: str
+    username: str
+    is_blocked: bool
+    status: User.Status
 
     class Config:
         orm_mode = True

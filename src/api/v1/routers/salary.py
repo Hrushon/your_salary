@@ -6,11 +6,13 @@ from src.api.v1.request_models.salary import (SalaryCreateRequest,
                                               SalaryUpdateRequest)
 from src.api.v1.response_models.error import generate_error_responses
 from src.api.v1.response_models.salary import SalaryResponse
+from src.core.services.permissions import is_administrator_or_staff
 from src.core.services.salary_service import SalaryService
 
 router = APIRouter(
     prefix='/salaries',
     tags=['Заработные платы'],
+    dependencies=(Depends(is_administrator_or_staff),)
 )
 
 

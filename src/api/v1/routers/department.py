@@ -7,10 +7,12 @@ from src.api.v1.request_models.department import (DepartmentCreateRequest,
 from src.api.v1.response_models.department import DepartmentResponse
 from src.api.v1.response_models.error import generate_error_responses
 from src.core.services.department_service import DepartmentService
+from src.core.services.permissions import is_administrator_or_staff
 
 router = APIRouter(
     prefix='/departments',
     tags=['Департаменты'],
+    dependencies=(Depends(is_administrator_or_staff),)
 )
 
 

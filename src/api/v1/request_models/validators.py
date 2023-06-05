@@ -45,10 +45,20 @@ def username_validator(field_name: str) -> str:
     )
 
 
-def department_position_validator(field_name: str):
+def department_position_validator(field_name: str) -> str:
     return validator(field_name, allow_reuse=True)(
         lambda v: match_regex_pattern(
             v, VALID_DEPART_POSITION,
             DEPART_POSITION_TEXT_ERROR, field_name
         )
     )
+
+
+def passwords_match(cls, value, values, **kwargs):
+    if value.get_secret_value() != values['password'].get_secret_value():
+        raise ValueError('Введенные пароли не совпадают')
+    return value
+
+
+def password_validator(field_name: str):
+    return validator(field_name, allow_reuse=True)(passwords_match)

@@ -35,29 +35,30 @@ class UserCRUD(BaseCRUD):
         return user
 
     async def is_user_exists(
-        self, username: str, status: User.Status | None = None
+        self, username: str, statuses: list[User.Status] | None = None
     ) -> bool:
         """Проверяет существование записи пользователя в БД.
 
         Аргументы:
             username: str - никнейм/логин пользователя
-            status: User.Status - статус пользователя
+            statuses: list[User.Status] - список статусов пользователя
         """
         query = select(self._model).where(self._model.username == username)
-        if status:
-            query.where(self._model.status == status)
+        if statuses:
+            query = query.where(self._model.status.in_(statuses))
         user_exists = await self._session.scalars(select(query.exists()))
         return user_exists.first()
 
-    async def update_by_self(self, obj: User, data: dict) -> User:
+    async def update_by_obj(self, obj: User, data: dict | None = None) -> User:
         """Обновляет данные полученного объекта модели в БД.
 
         Аргументы:
             obj: User - объект данных пользователя
             data: dict - данные пользователя
         """
-        for key, value in data.items():
-            setattr(obj, key, value)
+        if data:
+            for key, value in data.items():
+                setattr(obj, key, value)
         self._session.add(obj)
         await self._session.commit()
         await self._session.refresh(obj)

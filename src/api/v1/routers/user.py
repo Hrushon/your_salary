@@ -4,25 +4,22 @@ from fastapi import APIRouter, Depends, Path, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from src.api.v1.request_models.user import (UserAuthenticateRequest,
+                                            UserChangeStatusRequest,
                                             UserCreateRequest,
+                                            UserResetPasswordRequest,
                                             UserSelfUpdateRequest,
                                             UserUpdateRequest)
 from src.api.v1.response_models.error import generate_error_responses
 from src.api.v1.response_models.user import (UserAndAccessTokenResponse,
-                                             UserResponse)
+                                             UserResponse, UserShortResponse)
+from src.core.services.permissions import (is_administrator,
+                                           is_administrator_or_staff)
 from src.core.services.user_service import AuthenticationService, UserService
 
 router = APIRouter(
     prefix='/employees',
     tags=['Работники'],
 )
-
-
-async def auth_check(
-    token: Annotated[HTTPAuthorizationCredentials, Depends(HTTPBearer())],
-    auth_service: Annotated[AuthenticationService, Depends()]
-) -> None:
-    return await auth_service.check_current_user_exists(token=token)
 
 
 @router.post(
@@ -58,7 +55,7 @@ async def login(
     responses=generate_error_responses(
         status.HTTP_403_FORBIDDEN,
     ),
-    dependencies=(Depends(auth_check),)
+    dependencies=(Depends(is_administrator_or_staff),)
 )
 async def get_users(
     user_service: Annotated[UserService, Depends()]
@@ -97,48 +94,14 @@ async def create_user(
     """
     Создает запись нового работника в базе данных.
 
-    - **id**: уникальный идентификатор записи в БД
     - **first_name**: имя работника
     - **last_name**: фамилия работника
     - **username**: логин/никнейм работника
+    - **password**: пароль работника
+    - **password_repeat**: повторный ввод пароля
     - **date_of_birth**: день рождения работника
-    - **department_id**: идентификатор отдела в котором работает работник
-    - **position_id**: идентификатор должности работника
-    - **salary_id**: идентификатор заработной плата работника
     """
     return await user_service.create_user(data=data)
-
-
-@router.get(
-    '/{obj_id}/',
-    status_code=status.HTTP_200_OK,
-    summary='Получить данные отдельного работника из БД',
-    response_description='Получены данные работника из БД',
-    responses=generate_error_responses(
-        status.HTTP_404_NOT_FOUND,
-        status.HTTP_422_UNPROCESSABLE_ENTITY
-    ),
-    dependencies=(Depends(auth_check),)
-)
-async def get_user_by_id(
-    obj_id: Annotated[int, Path(description='Значение поля id записи', gt=0)],
-    user_service: Annotated[UserService, Depends()]
-) -> UserResponse:
-    """
-    Возвращает запись отдельного работника из базы данных по полю `id`.
-
-    - **id**: уникальный идентификатор записи в БД
-    - **first_name**: имя работника
-    - **last_name**: фамилия работника
-    - **username**: логин/никнейм работника
-    - **date_of_birth**: день рождения работника
-    - **is_blocked**: блокировка работника
-    - **status**: статус работника
-    - **department**: отдел в котором работает работник
-    - **position**: должность работника
-    - **salary**: заработная плата работника
-    """
-    return await user_service.get_by_id(obj_id=obj_id)
 
 
 @router.get(
@@ -156,20 +119,7 @@ async def get_user_by_self(
     token: Annotated[HTTPAuthorizationCredentials, Depends(HTTPBearer())],
     auth_service: Annotated[AuthenticationService, Depends()],
 ) -> UserResponse:
-    """
-    Возвращает пользователю запись c его данными из базы.
-
-    - **id**: уникальный идентификатор записи в БД
-    - **first_name**: имя работника
-    - **last_name**: фамилия работника
-    - **username**: логин/никнейм работника
-    - **date_of_birth**: день рождения работника
-    - **is_blocked**: блокировка работника
-    - **status**: статус работника
-    - **department**: отдел в котором работает работник
-    - **position**: должность работника
-    - **salary**: заработная плата работника
-    """
+    """Возвращает пользователю запись c его данными из базы."""
     return await auth_service.get_current_user(token=token)
 
 
@@ -195,19 +145,36 @@ async def update_by_user_himself(
     Обновляет coбственную запись работника в базе данных.
 
     И возвращает данные обновленной записи.
-    - **id**: уникальный идентификатор записи в БД
+
     - **first_name**: имя работника
     - **last_name**: фамилия работника
-    - **username**: логин/никнейм работника
     - **date_of_birth**: день рождения работника
-    - **is_blocked**: блокировка работника
-    - **status**: статус работника
-    - **department**: отдел в котором работает работник
-    - **position**: должность работника
-    - **salary**: заработная плата работника
     """
     user = await auth_service.get_current_user(token=token)
     return await user_service.update_user_himself(data=data, user_obj=user)
+
+
+@router.get(
+    '/{obj_id}/',
+    status_code=status.HTTP_200_OK,
+    summary='Получить данные отдельного работника из БД',
+    response_description='Получены данные работника из БД',
+    responses=generate_error_responses(
+        status.HTTP_404_NOT_FOUND,
+        status.HTTP_422_UNPROCESSABLE_ENTITY
+    ),
+    dependencies=(Depends(is_administrator_or_staff),)
+)
+async def get_user_by_id(
+    obj_id: Annotated[int, Path(description='Значение поля id записи', gt=0)],
+    user_service: Annotated[UserService, Depends()]
+) -> UserResponse:
+    """
+    Возвращает запись отдельного работника из базы данных по полю `id`.
+
+    - **obj_id**: уникальный идентификатор записи в БД
+    """
+    return await user_service.get_by_id(obj_id=obj_id)
 
 
 @router.patch(
@@ -219,7 +186,7 @@ async def update_by_user_himself(
         status.HTTP_404_NOT_FOUND,
         status.HTTP_422_UNPROCESSABLE_ENTITY
     ),
-    dependencies=(Depends(auth_check),)
+    dependencies=(Depends(is_administrator_or_staff),)
 )
 async def update_user(
     obj_id: Annotated[int, Path(description='Значение поля id записи', gt=0)],
@@ -230,16 +197,123 @@ async def update_user(
     Обновляет запись отдельного работника в базе данных по полю `id`.
 
     И возвращает данные обновленной записи.
-    - **id**: уникальный идентификатор записи в БД
+
     - **first_name**: имя работника
     - **last_name**: фамилия работника
-    - **username**: логин/никнейм работника
     - **date_of_birth**: день рождения работника
-    - **department_id**: идентификатор отдела в котором работает работник
-    - **position_id**: идентификатор должности работника
-    - **salary_id**: идентификатор заработной плата работника
+    - **department**: идентификатор отдела в котором работает работник
+    - **position**: идентификатор должности работника
+    - **salary**: идентификатор заработной плата работника
     """
     return await user_service.update_user(obj_id=obj_id, data=data)
+
+
+@router.patch(
+    '/{obj_id}/status/',
+    status_code=status.HTTP_200_OK,
+    summary='Изменить статус работника в БД',
+    response_description='Изменен статус работника в БД',
+    responses=generate_error_responses(
+        status.HTTP_404_NOT_FOUND,
+        status.HTTP_422_UNPROCESSABLE_ENTITY
+    ),
+    dependencies=(Depends(is_administrator),)
+)
+async def change_user_status(
+    obj_id: Annotated[int, Path(description='Значение поля id записи', gt=0)],
+    data: UserChangeStatusRequest,
+    user_service: Annotated[UserService, Depends()]
+) -> UserShortResponse:
+    """
+    Изменяет статус отдельного работника в базе данных по полю `id`.
+
+    Возвращает данные обновленной записи.
+
+    - **obj_id**: уникальный идентификатор записи в БД
+    - **status**: статус работника
+
+    Варианты статусов:
+        `admin` - администратор
+        `staff` - управляющий персонал
+        `employee` - работник без доступа к данным других работников
+    """
+    return await user_service.change_user_status(obj_id=obj_id, data=data)
+
+
+@router.get(
+    '/{obj_id}/block/',
+    status_code=status.HTTP_200_OK,
+    summary='Заблокировать работника',
+    response_description='Работник заблокирован',
+    responses=generate_error_responses(
+        status.HTTP_404_NOT_FOUND,
+    ),
+    dependencies=(Depends(is_administrator_or_staff),)
+)
+async def block_user(
+    obj_id: Annotated[int, Path(description='Значение поля id записи', gt=0)],
+    user_service: Annotated[UserService, Depends()]
+) -> UserResponse:
+    """
+    Блокирует работника по полю `id`.
+
+    Возвращает данные заблокированной записи.
+
+    - **obj_id**: уникальный идентификатор записи в БД
+    """
+    return await user_service.set_block_user(obj_id=obj_id)
+
+
+@router.get(
+    '/{obj_id}/unblock/',
+    status_code=status.HTTP_200_OK,
+    summary='Разблокировать работника',
+    response_description='Работник разблокирован',
+    responses=generate_error_responses(
+        status.HTTP_404_NOT_FOUND,
+    ),
+    dependencies=(Depends(is_administrator_or_staff),)
+)
+async def unblock_user(
+    obj_id: Annotated[int, Path(description='Значение поля id записи', gt=0)],
+    user_service: Annotated[UserService, Depends()]
+) -> UserResponse:
+    """
+    Снимает блокировку с работника по полю `id`.
+
+    Возвращает данные заблокированной записи.
+
+    - **obj_id**: уникальный идентификатор записи в БД
+    """
+    return await user_service.unset_block_user(obj_id=obj_id)
+
+
+@router.patch(
+    '/{obj_id}/password_reset/',
+    status_code=status.HTTP_200_OK,
+    summary='Изменение пароля работника в БД',
+    response_description='Изменен пароль работника в БД',
+    responses=generate_error_responses(
+        status.HTTP_404_NOT_FOUND,
+        status.HTTP_422_UNPROCESSABLE_ENTITY
+    ),
+    dependencies=(Depends(is_administrator),)
+)
+async def change_user_password(
+    obj_id: Annotated[int, Path(description='Значение поля id записи', gt=0)],
+    data: UserResetPasswordRequest,
+    user_service: Annotated[UserService, Depends()]
+) -> UserShortResponse:
+    """
+    Изменяет пароль отдельного работника в базе данных по полю `id`.
+
+    Возвращает данные обновленной записи.
+
+    - **obj_id**: уникальный идентификатор записи в БД
+    - **password**: новый пароль работника
+    - **password_repeat**: повторный ввод нового пароля работника
+    """
+    return await user_service.change_user_password(obj_id=obj_id, data=data)
 
 
 @router.delete(
@@ -251,7 +325,7 @@ async def update_user(
         status.HTTP_404_NOT_FOUND,
         status.HTTP_422_UNPROCESSABLE_ENTITY
     ),
-    dependencies=(Depends(auth_check),)
+    dependencies=(Depends(is_administrator_or_staff),)
 )
 async def delete_user(
     obj_id: Annotated[int, Path(description='Значение поля id записи', gt=0)],

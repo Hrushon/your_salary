@@ -132,21 +132,23 @@ class AuthenticationService:
     async def check_current_user_exists(
         self,
         token: HTTPAuthorizationCredentials,
-        status: User.Status | None = None
+        statuses: list[User.Status] | None = None
     ) -> None:
         """Производит авторизацию пользователя по токену.
 
         Выбрасывает исключение если пользователь не обнаружен.
-        Если определен аргумент `status` - пользователь дополнительно
-        проверяется на наличие данного статуса.
+        Если определен аргумент `statuses` - пользователь дополнительно
+        проверяется на наличие статуса из списка.
 
         Аргументы:
             token: HTTPAuthorizationCredentials - схема авторизации
-            status: User.Status - статус пользователя
+            statuses: list[User.Status] - список статусов пользователя
         """
         username = self.get_username_from_token(token=token.credentials)
-        if status and status not in User.Status._member_names_:
-            raise custom_exceptions.UserUnknownStatusError(status)
-        user_exists = await self.__crud.is_user_exists(username, status)
+        if statuses:
+            for status in statuses:
+                if status not in User.Status.__members__.values():
+                    raise custom_exceptions.UserUnknownStatusError(status)
+        user_exists = await self.__crud.is_user_exists(username, statuses)
         if not user_exists:
             raise custom_exceptions.ForbiddenError

@@ -1,7 +1,10 @@
 from pydantic import Field, PastDate, PositiveInt, SecretStr, StrictStr
 
+from src.data_base.models import User
+
 from .base_request import BaseRequest
-from .validators import first_and_last_name_validator, username_validator
+from .validators import (first_and_last_name_validator, password_validator,
+                         username_validator)
 
 
 class TokenData(BaseRequest):
@@ -13,14 +16,13 @@ class UserCreateRequest(BaseRequest):
     last_name: StrictStr = Field(min_length=2, max_length=150)
     username: StrictStr = Field(min_length=2, max_length=150)
     password: SecretStr = Field(min_length=8)
+    password_repeat: SecretStr = Field(min_length=8)
     date_of_birth: PastDate
-    department: PositiveInt | None
-    position: PositiveInt | None
-    salary: PositiveInt | None
 
     _validate_first_name = first_and_last_name_validator('first_name')
     _validate_last_name = first_and_last_name_validator('last_name')
-    _validate_pusername = username_validator('username')
+    _validate_username = username_validator('username')
+    _validate_password = password_validator('password_repeat')
 
 
 class UserSelfUpdateRequest(BaseRequest):
@@ -32,16 +34,11 @@ class UserSelfUpdateRequest(BaseRequest):
     _validate_last_name = first_and_last_name_validator('last_name')
 
 
-class UserEditUsernameRequest(BaseRequest):
-    username: StrictStr = Field(min_length=2, max_length=150)
+class UserResetPasswordRequest(BaseRequest):
     password: SecretStr = Field(min_length=8)
+    password_repeat: SecretStr = Field(min_length=8)
 
-    _validate_pusername = username_validator('username')
-
-
-class UserEditPasswordRequest(BaseRequest):
-    old_password: SecretStr = Field(min_length=8)
-    new_password: SecretStr = Field(min_length=8)
+    _validate_password = password_validator('password_repeat')
 
 
 class UserUpdateRequest(BaseRequest):
@@ -61,16 +58,5 @@ class UserAuthenticateRequest(BaseRequest):
     password: SecretStr = Field(min_length=8)
 
 
-class UserUpdateByAdminRequest(BaseRequest):
-    first_name: StrictStr = Field(min_length=2, max_length=150)
-    last_name: StrictStr = Field(min_length=2, max_length=150)
-    username: StrictStr = Field(min_length=2, max_length=150)
-    password: SecretStr = Field(min_length=8)
-    date_of_birth: PastDate
-    department: PositiveInt | None
-    position: PositiveInt | None
-    salary: PositiveInt | None
-
-    _validate_first_name = first_and_last_name_validator('first_name')
-    _validate_last_name = first_and_last_name_validator('last_name')
-    _validate_pusername = username_validator('username')
+class UserChangeStatusRequest(BaseRequest):
+    status: User.Status

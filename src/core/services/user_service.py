@@ -2,7 +2,9 @@ from typing import Annotated
 
 from fastapi import Depends
 
-from src.api.v1.request_models.user import (UserCreateRequest,
+from src.api.v1.request_models.user import (UserChangeStatusRequest,
+                                            UserCreateRequest,
+                                            UserResetPasswordRequest,
                                             UserSelfUpdateRequest,
                                             UserUpdateRequest)
 from src.core.services.authentication_service import AuthenticationService
@@ -32,15 +34,15 @@ class UserService:
         Аргументы:
             data: UserCreateRequest - данные для создания объекта.
         """
-        if data.department:
+        if hasattr(data, 'department'):
             data.department = await self.__department_crud.get_or_404(
                 data.department
             )
-        if data.position:
+        if hasattr(data, 'position'):
             data.position = await self.__position_crud.get_or_404(
                 data.position
             )
-        if data.salary:
+        if hasattr(data, 'salary'):
             data.salary = await self.__salary_crud.get_or_404(
                 data.salary
             )
@@ -62,7 +64,7 @@ class UserService:
             password=data.password.get_secret_value()
         )
         data = await self.__get_nested_instances(data=data)
-        user = User(**data.dict())
+        user = User(**data.dict(exclude={'password_repeat'}))
         return await self.__crud.create(user)
 
     async def get_by_id(
@@ -101,7 +103,52 @@ class UserService:
         """
         data = await self.__get_nested_instances(data=data)
         data_dict = data.dict(exclude_unset=True)
-        return await self.__crud.update_by_self(obj=user_obj, data=data_dict)
+        return await self.__crud.update_by_obj(obj=user_obj, data=data_dict)
+
+    async def change_user_status(
+        self, obj_id: int, data: UserChangeStatusRequest
+    ) -> User:
+        """Изменяет статус пользователя в записи в БД.
+
+        Аргументы:
+            obj_id: int - значение поля `id` записи в БД,
+            data: UserChangeStatusRequest - новый статус
+        """
+        data_dict = data.dict(exclude_unset=True)
+        return await self.__crud.update(obj_id, data_dict)
+
+    async def change_user_password(
+        self, obj_id: int, data: UserResetPasswordRequest
+    ) -> User:
+        """Изменяет статус пользователя в записи в БД.
+
+        Аргументы:
+            obj_id: int - значение поля `id` записи в БД,
+            data: UserResetPasswordRequest - данные с новым паролем
+        """
+        data.password = AuthenticationService.get_password_hash(
+            password=data.password.get_secret_value()
+        )
+        data_dict = data.dict(exclude={'password_repeat'}, exclude_unset=True)
+        return await self.__crud.update(obj_id, data_dict)
+
+    async def set_block_user(self, obj_id: int) -> User:
+        """Блокирует пользователя.
+
+        Аргументы:
+            obj_id: int - значение поля `id` записи в БД
+        """
+        data_dict: dict = {'is_blocked': True}
+        return await self.__crud.update(obj_id, data_dict)
+
+    async def unset_block_user(self, obj_id: int) -> User:
+        """Снимает блокировку с пользователя.
+
+        Аргументы:
+            obj_id: int - значение поля `id` записи в БД
+        """
+        data_dict: dict = {'is_blocked': False}
+        return await self.__crud.update(obj_id, data_dict)
 
     async def delete_user(self, obj_id: int) -> None:
         """Удаляет запись с данными пользователя из БД.

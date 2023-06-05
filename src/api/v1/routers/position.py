@@ -6,11 +6,13 @@ from src.api.v1.request_models.position import (PositionCreateRequest,
                                                 PositionUpdateRequest)
 from src.api.v1.response_models.error import generate_error_responses
 from src.api.v1.response_models.position import PositionResponse
+from src.core.services.permissions import is_administrator_or_staff
 from src.core.services.position_service import PositionService
 
 router = APIRouter(
     prefix='/positions',
     tags=['Должности'],
+    dependencies=(Depends(is_administrator_or_staff),)
 )
 
 
