@@ -85,7 +85,7 @@ class Salary(Base):
     amount: Mapped[float] = mapped_column(
         Numeric(9, 2), CheckConstraint('amount > 0')
     )
-    raise_date: Mapped[date]
+    raise_date: Mapped[date] = mapped_column(index=True)
     employee: Mapped['User'] = relationship(
         back_populates='salary', lazy='joined'
     )

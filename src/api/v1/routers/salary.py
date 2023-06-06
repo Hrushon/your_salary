@@ -1,6 +1,7 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Path, status
+from pydantic import FutureDate
 
 from src.api.v1.request_models.salary import (SalaryCreateRequest,
                                               SalaryUpdateRequest)
@@ -23,17 +24,31 @@ router = APIRouter(
     response_description='Получен список всех заработных плат'
 )
 async def get_salaries(
-    service: Annotated[SalaryService, Depends()]
+    service: Annotated[SalaryService, Depends()],
+    date_after: FutureDate | None = None,
+    date_before: FutureDate | None = None
 ) -> list[SalaryResponse]:
     """
     Возвращает список всех заработных плат из базы данных.
+
+    Query-параметры `date_before` и `date_after` позволяют
+    фильтровать результаты запроса по датам.
+    - **`date_after`** - выводит результаты с датой `rase_date` больше
+    или равной указанной.
+    - **`date_before`** - выводит результаты с датой `rase_date` меньше
+    или равной указанной.
+    Порядок сортировки результатов определен
+    по дате - от ближайшей даты к более поздней.
 
     - **id**: уникальный идентификатор записи в БД
     - **amount**: размер заработной платы
     - **raise_date**: дата следующего повышения заработной платы
     - **employee**: работник с такой заработной платой
     """
-    return await service.get_all()
+    return await service.get_all(
+        date_after=date_after,
+        date_before=date_before
+    )
 
 
 @router.post(

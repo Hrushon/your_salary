@@ -1,6 +1,7 @@
 from typing import Annotated
 
 from fastapi import Depends
+from pydantic import FutureDate
 
 from src.api.v1.request_models.salary import (SalaryCreateRequest,
                                               SalaryUpdateRequest)
@@ -14,9 +15,16 @@ class SalaryService:
     ) -> None:
         self.__crud = salary_crud
 
-    async def get_all(self) -> list[Salary]:
+    async def get_all(
+        self,
+        date_after: FutureDate | None = None,
+        date_before: FutureDate | None = None
+    ) -> list[Salary]:
         """Возвращает список всех заработных плат из БД."""
-        return await self.__crud.get_all()
+        return await self.__crud.get_all(
+            date_after=date_after,
+            date_before=date_before
+        )
 
     async def create_salary(
         self, data: SalaryCreateRequest
