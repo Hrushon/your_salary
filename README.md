@@ -60,7 +60,7 @@ sudo docker-compose exec backend alembic upgrade head
 ```
 + загружаем тестовые данные в базу:
 ```
-sudo docker-compose exec backend ???
+sudo docker-compose exec backend python -m load_data.main
 ```
 #### Логин и пароль от учетной записи тестового пользователя-администратора:
 + _логин_
@@ -79,11 +79,11 @@ salary2023
 
 _Получение списка пользователей: доступный метод - GET_
 ```
-/api/v1/users/
+/api/v1/employees/
 ```
 _Создание нового пользователя: доступный метод - POST_
 ```
-/api/v1/users/
+/api/v1/employees/
 ```
 _Схема запроса:_
 ```
@@ -92,25 +92,28 @@ _Схема запроса:_
     "last_name": "string",
     "username": "string",
     "password": "string",
+    "password_repeat": "string",
     "date_birth": 2000-01-21,
     "department": 0,
-    "position": 0
+    "position": 0,
+    "salary": 0
 }
 ```
 + _отдел (department): поле id_
 + _должность (position): поле id_
++ _заработная плата (salary): поле id_
 
 _Получение информации о пользователе по id: доступный метод - GET_
 ```
-/api/v1/users/{id}/
+/api/v1/employees/{id}/
 ```
 _Получение информации о текущем пользователе: доступный метод - GET_
 ```
-/api/v1/users/me/
+/api/v1/employees/me/
 ```
 _Редактирование информации о пользователе: доступные методы - PATCH_
 ```
-/api/v1/users/me/
+/api/v1/employees/me/
 ```
 _Доступные поля для изменения:_
 ```
@@ -130,15 +133,15 @@ _Доступные поля для изменения:_
 
 _Удаление текущего пользователя: доступный метод - DEL_
 ```
-/api/v1/users/me/
+/api/v1/employees/me/
 ```
 _Удаление пользователя по id: доступный метод - DEL_
 ```
-/api/v1/users/{id}/
+/api/v1/employees/{id}/
 ```
 _Смена пароля: доступный метод - POST_
 ```
-/api/v1/users/set_password/
+/api/v1/employees/set_password/
 ```
 _Схема запроса:_
 ```
@@ -149,7 +152,7 @@ _Схема запроса:_
 ```
 _Смена логина (username): доступный метод - POST_
 ```
-/api/v1/users/set_username/
+/api/v1/employees/set_username/
 ```
 _Схема запроса:_
 ```
@@ -160,7 +163,7 @@ _Схема запроса:_
 ```
 _Создание токена для пользователя: доступный метод - POST_
 ```
-/api/v1/token/login/
+/api/v1/employees/login/
 ```
 _Схема запроса:_
 ```
@@ -171,7 +174,7 @@ _Схема запроса:_
 ```
 _Удаление токена: доступный метод - DEL_
 ```
-/api/v1/token/logout/
+/api/v1/employees/logout/
 ```
 
 ### Работа с заработной платой

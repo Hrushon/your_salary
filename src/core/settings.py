@@ -28,7 +28,7 @@ class Settings(BaseSettings):
     DB_PORT: str
 
     @property
-    def get_postgresql_url(self):
+    def get_postgresql_url(self) -> str:
         """Возвращает необходимые данные для подключения `Postgresql`."""
         return PostgresDsn.build(
             scheme='postgresql+asyncpg',
