@@ -3,21 +3,23 @@ from sqlalchemy.orm import sessionmaker
 
 from ..core.settings import settings  # noqa
 
-# DB_URL: str = settings.get_postgresql_url
-DB_URL: str = 'sqlite+aiosqlite:///./db.sqlite3'
-
 echo: bool = True if settings.DEBUG else False
 
-# engine = create_async_engine(
-#   url=DB_URL,
-#   echo=echo,
-#   pool_pre_ping=True???? узнать для чего это
-# )
+DB_URL: str = settings.DB_DEV
 engine = create_async_engine(
     url=DB_URL,
     echo=echo,
     connect_args={"check_same_thread": False},
 )
+
+if not settings.DEVELOPMENT:
+    DB_URL: str = settings.get_postgresql_url
+    engine = create_async_engine(
+        url=DB_URL,
+        echo=echo,
+        pool_pre_ping=True
+    )
+
 async_session = sessionmaker(
     bind=engine, class_=AsyncSession, expire_on_commit=False
 )

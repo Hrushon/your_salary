@@ -7,6 +7,8 @@ from pydantic import BaseSettings, PostgresDsn
 class Settings(BaseSettings):
     """Настройки приложения."""
 
+    # Режим разработки (True/False - Активирован/Деактивирован)
+    DEVELOPMENT: bool
     # Режим отладки (True/False - Активирован/Деактивирован)
     DEBUG: bool
     # Секретный ключ для генерации токенов
@@ -19,11 +21,13 @@ class Settings(BaseSettings):
         Редактировать даты пересмотра и уровень заработной платы других
         сотрудников вправе только сотрудники с отдельным допуском.
     """
+    # База данных для режима разработки
+    DB_DEV: str = 'sqlite+aiosqlite:///./db.sqlite3'
 
     # База данных
-    DB_NAME: str
-    DB_USER: str
-    DB_PASSWORD: str
+    POSTGRES_DB: str
+    POSTGRES_USER: str
+    POSTGRES_PASSWORD: str
     DB_HOST: str
     DB_PORT: str
 
@@ -32,8 +36,8 @@ class Settings(BaseSettings):
         """Возвращает необходимые данные для подключения `Postgresql`."""
         return PostgresDsn.build(
             scheme='postgresql+asyncpg',
-            user=self.DB_USER,
-            password=self.DB_PASSWORD,
+            user=self.POSTGRES_USER,
+            password=self.POSTGRES_PASSWORD,
             host=self.DB_HOST,
             port=self.DB_PORT,
         )

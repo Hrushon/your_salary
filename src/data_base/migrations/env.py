@@ -12,8 +12,11 @@ from src.data_base.models import Base
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
-# config.set_main_option('sqlalchemy.url', settings.get_postgresql_url)
-config.set_main_option('sqlalchemy.url', 'sqlite+aiosqlite:///./db.sqlite3') # ONLY DO NOT FORGET ABOUT THIS!!
+
+if settings.DB_DEV:
+    config.set_main_option('sqlalchemy.url', settings.DB_DEV)
+else:
+    config.set_main_option('sqlalchemy.url', settings.get_postgresql_url)
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.

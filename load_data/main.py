@@ -6,11 +6,12 @@ from sqlalchemy.ext.asyncio import (AsyncEngine, AsyncSession,
                                     create_async_engine)
 
 from src.core.services.authentication_service import AuthenticationService
-from src.core.settings import settings  # noqa
+from src.core.settings import settings
 from src.data_base.models import Department, Position, Salary, User
 
-# DB_URL: str = settings.get_postgresql_url
-DB_URL: str = 'sqlite+aiosqlite:///./db.sqlite3'
+DB_URL: str = settings.DB_DEV
+if not settings.DEVELOPMENT:
+    DB_URL: str = settings.get_postgresql_url
 
 admin = User(
     first_name='Админ',
@@ -114,11 +115,6 @@ async def create_fake_data(engine: AsyncEngine) -> None:
 
 
 if __name__ == '__main__':
-    # engine = create_async_engine(
-    #   url=DB_URL,
-    #   echo=True,
-    #   pool_pre_ping=True???? узнать для чего это
-    # )
     engine = create_async_engine(
         url=DB_URL,
         echo=True
