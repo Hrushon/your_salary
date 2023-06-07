@@ -1,4 +1,4 @@
-![Workflow](https://github.com/your_salary/your_salary/actions/workflows/your_salary_deploy.yml/badge.svg)
+![Workflow](https://github.com/Hrushon/your_salary/actions/workflows/your_salary_build.yml/badge.svg)
 
 ![Python](https://img.shields.io/badge/Python-3.10.9-blue?style=flat&logo=python&logoColor=yellow)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.95.2-red?style=flat&logo=fastapi&logoColor=green)
@@ -15,10 +15,10 @@
 
 Клонируем репозиторий и переходим в директорию с приложением:
 ```
-git clone https://github.com/your_salary/your_salary.git
+git clone https://github.com/Hrushon/your_salary.git
 ```
 ```
-cd ./your_salary/
+cd ./infra/
 ```
 
 ### Структура env-файла:
@@ -51,16 +51,16 @@ DB_PORT=5432
 
 Разворачиваем контейнеры в фоновом режиме:
 ```
-sudo docker-compose up -d
+sudo docker compose up -d
 ```
 При первом запуске выполняем следующие команды:
 + применяем миграции:
 ```
-sudo docker-compose exec backend alembic upgrade head
+sudo docker compose exec backend alembic upgrade head
 ```
 + загружаем тестовые данные в базу:
 ```
-sudo docker-compose exec backend python -m load_data.main
+sudo docker compose exec backend python -m load_data.main
 ```
 #### Логин и пароль от учетной записи тестового пользователя-администратора:
 + _логин_
@@ -93,7 +93,23 @@ _Схема запроса:_
     "username": "string",
     "password": "string",
     "password_repeat": "string",
-    "date_birth": 2000-01-21,
+    "date_birth": "2000-01-21",
+}
+```
+_Получение информации о пользователе по id: доступный метод - GET_
+```
+/api/v1/employees/{id}/
+```
+_Редактирование информации о пользователе: доступные методы - PATCH_
+```
+/api/v1/employees/{id}/
+```
+_Доступные поля для изменения:_
+```
+{
+    "first_name": "string",
+    "last_name": "string",
+    "date_birth": "2000-01-21",
     "department": 0,
     "position": 0,
     "salary": 0
@@ -103,10 +119,29 @@ _Схема запроса:_
 + _должность (position): поле id_
 + _заработная плата (salary): поле id_
 
-_Получение информации о пользователе по id: доступный метод - GET_
+_Блокировка пользователя по id: доступный метод - GET_
 ```
-/api/v1/employees/{id}/
+/api/v1/employees/{id}/block/
 ```
+_Разблокировка пользователя по id: доступный метод - GET_
+```
+/api/v1/employees/{id}/unblock/
+```
+_Изменение статуса пользователя по id: доступный метод - PATCH_
+```
+/api/v1/employees/{id}/status/
+```
+_Доступные поля для изменения:_
+```
+{
+    "status": "admin"
+}
+```
+Варианты статусов:
++ _admin: администратор_
++ _staff: управляющий персонал_
++ _employee: работник без доступа к данным других работников_
+
 _Получение информации о текущем пользователе: доступный метод - GET_
 ```
 /api/v1/employees/me/
@@ -120,45 +155,22 @@ _Доступные поля для изменения:_
 {
     "first_name": "string",
     "last_name": "string",
-    "date_birth": 2000-01-21,
-    "department": 0,
-    "position": 0,
-    "status": "string"
+    "date_birth": "2000-01-21",
 }
-```
-+ _отдел (department): поле id_
-+ _должность (position): поле id_
-+ _уровень доступа к данным (status): ***blocked*** - заблокирован, ***active*** - активный, ***admin*** - администратор, ***staff*** - персонал
-Изменять поле `status` пользователя имеет право сотрудник со статусом персонала (`staff`) или администратора (`admin`).
-
-_Удаление текущего пользователя: доступный метод - DEL_
-```
-/api/v1/employees/me/
 ```
 _Удаление пользователя по id: доступный метод - DEL_
 ```
 /api/v1/employees/{id}/
 ```
-_Смена пароля: доступный метод - POST_
+_Смена пароля: доступный метод - PATCH_
 ```
-/api/v1/employees/set_password/
-```
-_Схема запроса:_
-```
-{
-    "new_password": "string",
-    "current_password": "string"
-}
-```
-_Смена логина (username): доступный метод - POST_
-```
-/api/v1/employees/set_username/
+/api/v1/employees/{id}/password_reset/
 ```
 _Схема запроса:_
 ```
 {
-    "current_password": "string",
-    "new_username": "string"
+    "password": "string",
+    "password_repeat": "string"
 }
 ```
 _Создание токена для пользователя: доступный метод - POST_
@@ -168,13 +180,9 @@ _Создание токена для пользователя: доступны
 _Схема запроса:_
 ```
 {
-    "password": "string",
-    "username": "string"
+    "username": "string",
+    "password": "string"
 }
-```
-_Удаление токена: доступный метод - DEL_
-```
-/api/v1/employees/logout/
 ```
 
 ### Работа с заработной платой
@@ -183,8 +191,12 @@ _Удаление токена: доступный метод - DEL_
 _Получение сотрудником его заработной платы и даты следующего повышения: доступный метод - GET_
 Сотрудник со статусом персонала (`staff`) или администратора (`admin`) получает список с данными для всех сотрудников.
 ```
-/api/v1/salary/
+/api/v1/salary/?date_after=2023-10-11&date_before=2023-11-01
 ```
+Доступные query-параметры для фильтрации результатов по дате следующего пересмотра:
++ _date_after: выводит результаты с датой `rase_date` больше или равной указанной_
++ _date_before: выводит результаты с датой `rase_date` меньше или равной указанной_
+
 _Создание записи с заработной платой и даты повышения для нового сотрудника: доступный метод - POST_
 Доступ к выполнению данной операции имеют только сотрудники со статусом персонала (`staff`) или администратора (`admin`).
 ```
@@ -194,7 +206,7 @@ _Схема запроса:_
 ```
 {
     "amount": 0.00,
-    "raise_date": 1990-04-21,
+    "raise_date": "1990-04-21",
     "employee": 0,
 }
 ```
@@ -211,11 +223,12 @@ _Доступные поля для изменения:_
 ```
 {
     "amount": 0.00,
-    "raise_date": 1990-04-21,
+    "raise_date": "1990-04-21",
 }
 ```
 + _размер (title) заработной платы_
 + _дата (raise_date) следующего повышения заработной платы_
+
 _Удаление записи с заработной платой по id: доступный метод - DEL_
 Доступ к выполнению данной операции имеют только сотрудники со статусом персонала (`staff`) или администратора (`admin`).
 ```
