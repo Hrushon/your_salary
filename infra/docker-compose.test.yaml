@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  test_db:
+    image: postgres:15-alpine
+    ports:
+      - "6000:6000"
+    command: -p 6000
+    env_file:
+      - ./.env
+
+  backend:
+    image: hrushon/your_salary:workflow
+    build: ../
+    restart: always
+    depends_on:
+      - test_db
+    env_file:
+      - ./.env

@@ -1,7 +1,10 @@
-DEBUG=True # Включение (True) или выключение (False) режима отладки
-DEVELOPMENT=False # Включение (True) или выключение (False) режима разработки
+DEBUG=True # включение (True) или выключение (False) режима отладки
+DEVELOPMENT=False # включение (True) или выключение (False) режима разработки
 POSTGRES_DB=your_salary_db # имя базы данных
 POSTGRES_USER=postgres # пользователь базы данных
 POSTGRES_PASSWORD=postgres # пароль базы данных
 DB_HOST=db # сервис (контейнер) базы данных
 DB_PORT=5432 # порт для подключения базы данных
+POSTGRES_DB_TEST=test_db # имя тестовой базы данных
+DB_HOST_TEST=test_db # сервис (контейнер) тестовой базы данных
+DB_PORT_TEST=6000 # порт для подключения тестовой базы данных

@@ -30,37 +30,59 @@ sudo nano .env
 ```
 В файл вносим следующие данные:
 ```
-# Включение (True) или выключение (False) режима отладки
+# включение (True) или выключение (False) режима отладки
 DEBUG=True
-# указываем имя базы данных
-DB_NAME=your_salary_db
-# логин для подключения к базе данных
-DB_USER=postgres
-# пароль для подключения к БД
-DB_PASSWORD=postgres
-# название сервиса (контейнера) для БД
-DB_HOST=your_salary_db
-# указываем порт для подключения к БД
+# включение (True) или выключение (False) режима разработки
+DEVELOPMENT=False
+# имя базы данных
+POSTGRES_DB=your_salary_db
+# пользователь базы данных
+POSTGRES_USER=postgres
+# пароль базы данных
+POSTGRES_PASSWORD=postgres
+# сервис (контейнер) базы данных
+DB_HOST=db
+# порт для подключения базы данных
 DB_PORT=5432
+# имя тестовой базы данных
+POSTGRES_DB_TEST=test_db
+# сервис (контейнер) тестовой базы данных
+DB_HOST_TEST=test_db
+# порт для подключения тестовой базы данных
+DB_PORT_TEST=6000
 ```
 
 #### _Второй способ (если Вас всё устраивает и так)_:
 Просто изменяем название файла `envexample`, находящегося в репозитории данного проекта, на `.env`.
-
-### Развертывание с использованием Docker:
+### Тестирование с использованием Docker Compose:
 
 Разворачиваем контейнеры в фоновом режиме:
 ```
-sudo docker compose up -d
+sudo docker compose -f docker-compose.test.yaml up -d
+```
+Выполняем следующие команды:
++ запускаем тестирование:
+```
+sudo docker compose -f docker-compose.test.yaml exec backend pytest
+```
++ после получения результатов тестирования останавливаем и удаляем контейнеры:
+```
+sudo docker compose -f docker-compose.test.yaml down -v
+```
+### Развертывание с использованием Docker Compose:
+
+Разворачиваем контейнеры в фоновом режиме:
+```
+sudo docker compose -f docker-compose.main.yaml up -d
 ```
 При первом запуске выполняем следующие команды:
 + применяем миграции:
 ```
-sudo docker compose exec backend alembic upgrade head
+sudo docker compose -f docker-compose.main.yaml exec backend alembic upgrade head
 ```
 + загружаем тестовые данные в базу:
 ```
-sudo docker compose exec backend python -m load_data.main
+sudo docker compose -f docker-compose.main.yaml exec backend python -m load_data.main
 ```
 #### Логин и пароль от учетной записи тестового пользователя-администратора:
 + _логин_

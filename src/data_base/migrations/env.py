@@ -13,7 +13,7 @@ from src.data_base.models import Base
 # access to the values within the .ini file in use.
 config = context.config
 
-if settings.DB_DEV:
+if settings.DEVELOPMENT:
     config.set_main_option('sqlalchemy.url', settings.DB_DEV)
 else:
     config.set_main_option('sqlalchemy.url', settings.get_postgresql_url)
