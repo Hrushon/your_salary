@@ -6,7 +6,7 @@ on:
     - main
 
 jobs:
-  tests with flake8 and pytest:
+  tests_with_flake8_and_pytest:
     name: Check app
     runs-on: ubuntu-latest
     services:
