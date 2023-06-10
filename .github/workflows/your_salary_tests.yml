@@ -5,6 +5,18 @@ on:
     branches:
     - main
 
+env:
+  DEBUG: False
+  DEVELOPMENT: False
+  POSTGRES_DB: your_salary_db
+  POSTGRES_USER: postgres
+  POSTGRES_PASSWORD: postgres
+  DB_HOST: db
+  DB_PORT: 5432
+  POSTGRES_DB_TEST: test_db
+  DB_HOST_TEST: test_db
+  DB_PORT_TEST: 6000
+
 jobs:
   tests_with_flake8_and_pytest:
     name: Check app
@@ -13,8 +25,8 @@ jobs:
       postgres:
         image: postgres
         env:
-          POSTGRES_PASSWORD: ${{vars.POSTGRES_PASSWORD}}
-          POSTGRES_DB: ${{vars.POSTGRES_DB}}
+          POSTGRES_PASSWORD: ${{env.POSTGRES_PASSWORD}}
+          POSTGRES_DB: ${{env.POSTGRES_DB}}
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -34,6 +46,19 @@ jobs:
         python -m pip install --upgrade pip
         pip install flake8 pep8-naming flake8-broken-line flake8-return flake8-isort
         pip install -r ./requirements.txt
+    - name: Create .env file
+      run: |
+        touch .env
+        echo DEBUG=$DEBUG >> .env
+        echo DEVELOPMENT=$DEVELOPMENT >> .env
+        echo POSTGRES_DB=$POSTGRES_DB >> .env
+        echo POSTGRES_USER=$POSTGRES_USER >> .env
+        echo POSTGRES_PASSWORD=$POSTGRES_PASSWORD >> .env
+        echo DB_HOST=$DB_HOST >> .env
+        echo DB_PORT=$DB_PORT >> .env
+        echo POSTGRES_DB_TEST=$POSTGRES_DB_TEST >> .env
+        echo DB_HOST_TEST=$DB_HOST_TEST >> .env
+        echo DB_PORT_TEST=$DB_PORT_TEST >> .env
     - name: Test with flake8
       run: |
         python -m flake8
