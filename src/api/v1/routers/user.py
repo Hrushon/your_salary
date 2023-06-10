@@ -253,7 +253,7 @@ async def change_user_status(
 async def block_user(
     obj_id: Annotated[int, Path(description='Значение поля id записи', gt=0)],
     user_service: Annotated[UserService, Depends()]
-) -> UserResponse:
+) -> UserShortResponse:
     """
     Блокирует работника по полю `id`.
 
@@ -277,7 +277,7 @@ async def block_user(
 async def unblock_user(
     obj_id: Annotated[int, Path(description='Значение поля id записи', gt=0)],
     user_service: Annotated[UserService, Depends()]
-) -> UserResponse:
+) -> UserShortResponse:
     """
     Снимает блокировку с работника по полю `id`.
 

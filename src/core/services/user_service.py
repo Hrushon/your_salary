@@ -34,15 +34,15 @@ class UserService:
         Аргументы:
             data: UserCreateRequest - данные для создания объекта.
         """
-        if hasattr(data, 'department'):
+        if hasattr(data, 'department') and data.department:
             data.department = await self.__department_crud.get_or_404(
                 data.department
             )
-        if hasattr(data, 'position'):
+        if hasattr(data, 'position') and data.position:
             data.position = await self.__position_crud.get_or_404(
                 data.position
             )
-        if hasattr(data, 'salary'):
+        if hasattr(data, 'salary') and data.salary:
             data.salary = await self.__salary_crud.get_or_404(
                 data.salary
             )
