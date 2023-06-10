@@ -7,7 +7,7 @@ on:
 
 env:
   DEBUG: False
-  DEVELOPMENT: False
+  DEVELOPMENT: True
   POSTGRES_DB: your_salary_db
   POSTGRES_USER: postgres
   POSTGRES_PASSWORD: postgres
@@ -21,22 +21,6 @@ jobs:
   tests_with_flake8_and_pytest:
     name: Check app
     runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres
-        env:
-          POSTGRES_USER: ${{env.POSTGRES_USER}}
-          POSTGRES_PASSWORD: ${{env.POSTGRES_PASSWORD}}
-          POSTGRES_DB: ${{env.POSTGRES_DB_TEST}}
-        ports:
-          - 6000:6000
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
-
     steps:
     - uses: actions/checkout@v3
     - name: Set up Python
