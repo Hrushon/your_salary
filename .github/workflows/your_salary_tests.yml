@@ -14,7 +14,7 @@ env:
   DB_HOST: db
   DB_PORT: 5432
   POSTGRES_DB_TEST: test_db
-  DB_HOST_TEST: test_db
+  DB_HOST_TEST: localhost
   DB_PORT_TEST: 6000
 
 jobs:
