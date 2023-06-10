@@ -20,7 +20,9 @@ from src.core.settings import settings
 from src.data_base.base import get_session
 from src.data_base.models import Base, Department, Position, Salary, User
 
-DATABASE_URL_TEST: str = settings.get_test_base_url
+database_url_test: str = settings.get_test_base_url
+if settings.DEVELOPMENT:
+    database_url_test: str = settings.DB_DEV
 
 raise_date: date = date.today() + timedelta(days=15)
 
@@ -28,7 +30,7 @@ app: FastAPI = create_application()
 metadata: MetaData = Base.metadata
 base_url: str = 'http://test/api/v1'
 
-engine_test = create_async_engine(DATABASE_URL_TEST, poolclass=NullPool)
+engine_test = create_async_engine(database_url_test, poolclass=NullPool)
 async_session_maker = sessionmaker(
     engine_test, class_=AsyncSession, expire_on_commit=False
 )
