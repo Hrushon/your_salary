@@ -31,7 +31,7 @@ sudo nano .env
 В файл вносим следующие данные:
 ```
 # включение (True) или выключение (False) режима отладки
-DEBUG=True
+DEBUG=False
 # включение (True) или выключение (False) режима разработки
 DEVELOPMENT=False
 # имя базы данных
