@@ -111,19 +111,20 @@ async def test_auth_staff_access_secondary_obj(
         'Authorization': 'Bearer {}'.format(get_tokens['staff'])
     })
     assert response.status_code == 200
-    response = await aclient.get(url + '1/', headers={
+    url = url + str(response.json()[0]['id']) + '/'
+    response = await aclient.get(url, headers={
         'Authorization': 'Bearer {}'.format(get_tokens['staff'])
     })
     assert response.status_code == 200
     response = await aclient.patch(
-        url + '1/',
+        url,
         json=data,
         headers={
             'Authorization': 'Bearer {}'.format(get_tokens['staff'])
         }
     )
     assert response.status_code == 200
-    response = await aclient.delete(url + '1/', headers={
+    response = await aclient.delete(url, headers={
         'Authorization': 'Bearer {}'.format(get_tokens['staff'])
     })
     assert response.status_code == 204
@@ -156,20 +157,21 @@ async def test_auth_admin_access_secondary_obj(
     response = await aclient.get(url, headers={
         'Authorization': 'Bearer {}'.format(get_tokens['admin'])
     })
+    url = url + str(response.json()[0]['id']) + '/'
     assert response.status_code == 200
-    response = await aclient.get(url + '2/', headers={
+    response = await aclient.get(url, headers={
         'Authorization': 'Bearer {}'.format(get_tokens['admin'])
     })
     assert response.status_code == 200
     response = await aclient.patch(
-        url + '2/',
+        url,
         json=data,
         headers={
             'Authorization': 'Bearer {}'.format(get_tokens['admin'])
         }
     )
     assert response.status_code == 200
-    response = await aclient.delete(url + '2/', headers={
+    response = await aclient.delete(url, headers={
         'Authorization': 'Bearer {}'.format(get_tokens['admin'])
     })
     assert response.status_code == 204

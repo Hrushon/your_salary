@@ -8,16 +8,16 @@ from ..core.settings import settings  # noqa
 echo: bool = True if settings.DEBUG else False
 
 if not settings.DEVELOPMENT:
-    DB_URL: str = settings.get_postgresql_url
+    db_url: str = settings.get_postgresql_url
     engine = create_async_engine(
-        url=DB_URL,
+        url=db_url,
         echo=echo,
         pool_pre_ping=True
     )
 else:
-    DB_URL: str = settings.DB_DEV
+    db_url: str = settings.DB_DEV
     engine = create_async_engine(
-        url=DB_URL,
+        url=db_url,
         echo=echo,
         connect_args={"check_same_thread": False},
     )
