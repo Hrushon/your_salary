@@ -31,6 +31,11 @@ class Settings(BaseSettings):
     DB_HOST: str
     DB_PORT: str
 
+    # Тестовая база данных
+    POSTGRES_DB_TEST: str
+    DB_HOST_TEST: str
+    DB_PORT_TEST: str
+
     @property
     def get_postgresql_url(self) -> str:
         """Возвращает необходимые данные для подключения `Postgresql`."""
@@ -39,7 +44,18 @@ class Settings(BaseSettings):
             user=self.POSTGRES_USER,
             password=self.POSTGRES_PASSWORD,
             host=self.DB_HOST,
-            port=self.DB_PORT,
+            port=self.DB_PORT
+        )
+
+    @property
+    def get_test_base_url(self) -> str:
+        """Возвращает необходимые данные для подключения тестовой БД."""
+        return PostgresDsn.build(
+            scheme='postgresql+asyncpg',
+            user=self.POSTGRES_USER,
+            password=self.POSTGRES_PASSWORD,
+            host=self.DB_HOST_TEST,
+            port=self.DB_PORT_TEST
         )
 
     class Config:

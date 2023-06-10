@@ -6,9 +6,23 @@ on:
     - main
 
 jobs:
-  tests:
+  tests with flake8 and pytest:
+    name: Check app
     runs-on: ubuntu-latest
-    
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_PASSWORD: ${{vars.POSTGRES_PASSWORD}}
+          POSTGRES_DB: ${{vars.POSTGRES_DB}}
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6000:6000
+
     steps:
     - uses: actions/checkout@v3
     - name: Set up Python
@@ -23,3 +37,6 @@ jobs:
     - name: Test with flake8
       run: |
         python -m flake8
+    - name: Test with Pytest
+      run: |
+        pytest

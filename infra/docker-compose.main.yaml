@@ -5,6 +5,9 @@ services:
     image: postgres:15-alpine
     volumes:
       - db_value:/var/lib/postgresql/data/
+    ports:
+      - "5432:5432"
+    command: -p 5432
     env_file:
       - ./.env
 

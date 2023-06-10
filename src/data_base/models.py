@@ -3,8 +3,8 @@ from datetime import date, datetime
 
 from sqlalchemy import (TIMESTAMP, CheckConstraint, Enum, ForeignKey, Numeric,
                         String, func)
-from sqlalchemy.ext.declarative import as_declarative, declared_attr  # noqa
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import (Mapped, as_declarative, declared_attr,
+                            mapped_column, relationship)
 
 
 @as_declarative()
