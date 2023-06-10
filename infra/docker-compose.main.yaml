@@ -17,7 +17,6 @@ services:
     restart: always
     depends_on:
       - db
-      - test_db
     env_file:
       - ./.env
 

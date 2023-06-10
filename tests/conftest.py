@@ -55,8 +55,8 @@ async def override_get_session() -> AsyncGenerator[AsyncSession, None]:
 app.dependency_overrides[get_session] = override_get_session
 
 
-@pytest.fixture(scope='function')
-async def create_user_needs_data():
+@pytest.fixture(scope='module')
+async def create_secondary_data():
     department = Department(title='Тестовый отдел')
     position = Position(title='Тестовая должность')
     salary = Salary(
@@ -100,6 +100,29 @@ async def create_auth_needs_data():
     async with async_session_maker() as session:
         session.add_all([admin, staff, employee])
         await session.commit()
+
+
+@pytest.fixture(scope='module')
+async def get_tokens(
+    aclient: AsyncClient, create_auth_needs_data: None  # noqa
+) -> dict[str, str]:
+    result: dict = dict()
+    token = await aclient.post('/employees/login/', json={
+        'username': 'admin',
+        'password': '12345678'
+    })
+    result['admin'] = token.json()['access_token']
+    token = await aclient.post('/employees/login/', json={
+        'username': 'staff',
+        'password': '12345678'
+    })
+    result['staff'] = token.json()['access_token']
+    token = await aclient.post('/employees/login/', json={
+        'username': 'employee',
+        'password': '12345678'
+    })
+    result['employee'] = token.json()['access_token']
+    return result
 
 
 @pytest.fixture(autouse=True, scope='module')

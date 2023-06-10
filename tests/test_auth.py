@@ -1,37 +1,178 @@
 import pytest
 from httpx import AsyncClient
 
-from .conftest import create_auth_needs_data  # noqa
-
-
-@pytest.fixture(scope='module')
-async def get_tokens(
-    aclient: AsyncClient, create_auth_needs_data: None  # noqa
-) -> dict[str, str]:
-    result: dict = dict()
-    token = await aclient.post('/employees/login/', json={
-        'username': 'admin',
-        'password': '12345678'
-    })
-    result['admin'] = token.json()['access_token']
-    token = await aclient.post('/employees/login/', json={
-        'username': 'staff',
-        'password': '12345678'
-    })
-    result['staff'] = token.json()['access_token']
-    token = await aclient.post('/employees/login/', json={
-        'username': 'employee',
-        'password': '12345678'
-    })
-    result['employee'] = token.json()['access_token']
-    return result
-
 
 async def test_auth_bad_token(aclient: AsyncClient, get_tokens: dict):
     response = await aclient.get('/employees/', headers={
         'Authorization': 'Bearer sdfm;sdklgjkl;sdjglk'
     })
     assert response.status_code == 401
+
+
+@pytest.mark.parametrize(
+    'url', ['/departments/', '/positions/', '/salaries/']
+)
+async def test_auth_unauthenticated_user_access_secondary_obj(
+    aclient: AsyncClient,
+    get_tokens: dict,
+    url: str
+):
+    data = {
+        'title': 'Тест тест тест'
+    }
+    if url == '/salaries/':
+        data = {
+            'amount': 20000.98,
+            'raise_date': '2030-01-01'
+        }
+    response = await aclient.post(url, json=data)
+    assert response.status_code == 403
+    response = await aclient.get(url)
+    assert response.status_code == 403
+    response = await aclient.get(url + '1/')
+    assert response.status_code == 403
+    response = await aclient.patch(url + '1/', json=data)
+    assert response.status_code == 403
+    response = await aclient.delete(url + '1/')
+    assert response.status_code == 403
+
+
+@pytest.mark.parametrize(
+    'url', ['/departments/', '/positions/', '/salaries/']
+)
+async def test_auth_employee_access_secondary_obj(
+    aclient: AsyncClient,
+    get_tokens: dict,
+    url: str
+):
+    data = {
+        'title': 'Тест тест тест'
+    }
+    if url == '/salaries/':
+        data = {
+            'amount': 20000.98,
+            'raise_date': '2030-01-01'
+        }
+    response = await aclient.post(
+        url,
+        json=data,
+        headers={
+            'Authorization': 'Bearer {}'.format(get_tokens['employee'])
+        }
+    )
+    assert response.status_code == 403
+    response = await aclient.get(url, headers={
+        'Authorization': 'Bearer {}'.format(get_tokens['employee'])
+    })
+    assert response.status_code == 403
+    response = await aclient.get(url + '1/', headers={
+        'Authorization': 'Bearer {}'.format(get_tokens['employee'])
+    })
+    assert response.status_code == 403
+    response = await aclient.patch(
+        url + '1/',
+        json=data,
+        headers={
+            'Authorization': 'Bearer {}'.format(get_tokens['employee'])
+        }
+    )
+    assert response.status_code == 403
+    response = await aclient.delete(url + '1/', headers={
+        'Authorization': 'Bearer {}'.format(get_tokens['employee'])
+    })
+    assert response.status_code == 403
+
+
+@pytest.mark.parametrize(
+    'url', ['/departments/', '/positions/', '/salaries/']
+)
+async def test_auth_staff_access_secondary_obj(
+    aclient: AsyncClient,
+    get_tokens: dict,
+    url: str
+):
+    data = {
+        'title': 'Тест тест тест'
+    }
+    if url == '/salaries/':
+        data = {
+            'amount': 20000.98,
+            'raise_date': '2030-01-01'
+        }
+    response = await aclient.post(
+        url,
+        json=data,
+        headers={
+            'Authorization': 'Bearer {}'.format(get_tokens['staff'])
+        }
+    )
+    assert response.status_code == 201
+    response = await aclient.get(url, headers={
+        'Authorization': 'Bearer {}'.format(get_tokens['staff'])
+    })
+    assert response.status_code == 200
+    response = await aclient.get(url + '1/', headers={
+        'Authorization': 'Bearer {}'.format(get_tokens['staff'])
+    })
+    assert response.status_code == 200
+    response = await aclient.patch(
+        url + '1/',
+        json=data,
+        headers={
+            'Authorization': 'Bearer {}'.format(get_tokens['staff'])
+        }
+    )
+    assert response.status_code == 200
+    response = await aclient.delete(url + '1/', headers={
+        'Authorization': 'Bearer {}'.format(get_tokens['staff'])
+    })
+    assert response.status_code == 204
+
+
+@pytest.mark.parametrize(
+    'url', ['/departments/', '/positions/', '/salaries/']
+)
+async def test_auth_admin_access_secondary_obj(
+    aclient: AsyncClient,
+    get_tokens: dict,
+    url: str
+):
+    data = {
+        'title': 'Тест тест тест'
+    }
+    if url == '/salaries/':
+        data = {
+            'amount': 20000.98,
+            'raise_date': '2030-01-01'
+        }
+    response = await aclient.post(
+        url,
+        json=data,
+        headers={
+            'Authorization': 'Bearer {}'.format(get_tokens['admin'])
+        }
+    )
+    assert response.status_code == 201
+    response = await aclient.get(url, headers={
+        'Authorization': 'Bearer {}'.format(get_tokens['admin'])
+    })
+    assert response.status_code == 200
+    response = await aclient.get(url + '2/', headers={
+        'Authorization': 'Bearer {}'.format(get_tokens['admin'])
+    })
+    assert response.status_code == 200
+    response = await aclient.patch(
+        url + '2/',
+        json=data,
+        headers={
+            'Authorization': 'Bearer {}'.format(get_tokens['admin'])
+        }
+    )
+    assert response.status_code == 200
+    response = await aclient.delete(url + '2/', headers={
+        'Authorization': 'Bearer {}'.format(get_tokens['admin'])
+    })
+    assert response.status_code == 204
 
 
 async def test_auth_read_users(aclient: AsyncClient, get_tokens: dict):

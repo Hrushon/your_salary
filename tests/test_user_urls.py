@@ -63,7 +63,7 @@ async def test_read_user_by_id(aclient: AsyncClient):
 
 
 @dependency_overrides
-async def test_update_user(aclient: AsyncClient, create_user_needs_data: None):
+async def test_update_user(aclient: AsyncClient, create_secondary_data: None):
     response = await aclient.patch('/employees/1/', json={
         'first_name': 'Иван',
         'last_name': 'Иванов',
