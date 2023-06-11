@@ -58,6 +58,16 @@ class Settings(BaseSettings):
             port=self.DB_PORT_TEST
         )
 
+    @property
+    def swagger(self) -> str:
+        """Возвращает относительный путь к документации APi `Swagger`."""
+        return '/docs' if self.DEBUG else None
+
+    @property
+    def redoc(self) -> str:
+        """Возвращает относительный путь к документации APi `ReDoc`."""
+        return '/redoc' if self.DEBUG else None
+
     class Config:
         env_file = '.env'
         env_file_encoding = 'utf-8'

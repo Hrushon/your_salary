@@ -17,6 +17,8 @@ def create_application() -> FastAPI:
         description=settings.DESCRIPTION,
         debug=settings.DEBUG,
         version=1.0,
+        docs_url=settings.swagger,
+        redoc_url=settings.redoc
     )
     app.include_router(base_router.router)
 
