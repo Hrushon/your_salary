@@ -19,7 +19,7 @@ else:
     engine = create_async_engine(
         url=db_url,
         echo=echo,
-        connect_args={"check_same_thread": False},
+        connect_args={'check_same_thread': False},
     )
 
 async_session = sessionmaker(

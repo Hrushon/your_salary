@@ -23,6 +23,8 @@ class Settings(BaseSettings):
     """
     # База данных для режима разработки
     DB_DEV: str = 'sqlite+aiosqlite:///./db.sqlite3'
+    # Тестовая база данных для режима разработки
+    DB_DEV_TEST: str = 'sqlite+aiosqlite:///./db.sqlite3_tests'
 
     # База данных
     POSTGRES_DB: str
