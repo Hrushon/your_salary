@@ -5,7 +5,6 @@ repos:
     - id: check-yaml
     - id: end-of-file-fixer
     - id: check-added-large-files
-    - id: double-quote-string-fixer
     - id: trailing-whitespace
       args: [--markdown-linebreak-ext=md]
     - id: check-merge-conflict
@@ -31,7 +30,4 @@ repos:
         - pep8-naming
         - flake8-broken-line
         - flake8-return
-        - flake8-print
-        - pycodestyle
-        - flake8-quotes
       args: [--config, setup.cfg]
