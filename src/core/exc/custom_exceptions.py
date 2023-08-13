@@ -25,12 +25,12 @@ class NotFoundError(AppBaseError):
 
 class ForbiddenError(AppBaseError):
     status_code: status = status.HTTP_403_FORBIDDEN
-    detail = 'У вас недостаточно прав для выполнения этой операции'
+    detail = "У вас недостаточно прав для выполнения этой операции"
 
 
 class UnauthorizedError(AppBaseError):
     status_code: status = status.HTTP_401_UNAUTHORIZED
-    detail = 'У Вас нет прав для просмотра запрошенной страницы.'
+    detail = "У Вас нет прав для просмотра запрошенной страницы."
 
 
 class ObjectNotExistError(NotFoundError):
@@ -56,7 +56,7 @@ class UserBlockedError(ForbiddenError):
 
 
 class InvalidAuthenticationDataError(BadRequestError):
-    detail = 'Неверный `username` или пароль.'
+    detail = "Неверный `username` или пароль."
 
 
 class UserUnknownStatusError(BadRequestError):

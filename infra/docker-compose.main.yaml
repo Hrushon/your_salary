@@ -5,7 +5,9 @@ services:
     image: postgres:15-alpine
     volumes:
       - your_salary_db:/var/lib/postgresql/data/
-    command: -p ${DB_PORT}
+    ports:
+      - "5432:5432"
+    command: -p 5432
     env_file:
       - ./.env
 
@@ -13,8 +15,6 @@ services:
     image: hrushon/your_salary:workflow
     build: ../
     restart: always
-    environment:
-      - DEVELOPMENT=False
     depends_on:
       - db
     env_file:

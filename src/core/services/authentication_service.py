@@ -17,7 +17,7 @@ from src.data_base.models import User
 ALGORITHM: str = 'HS256'
 ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7
 PASSWORD_CONTEXT: CryptContext = CryptContext(
-    schemes=['bcrypt'], deprecated='auto'
+    schemes=["bcrypt"], deprecated="auto"
 )
 
 

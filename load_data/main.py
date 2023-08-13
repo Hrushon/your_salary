@@ -1,5 +1,5 @@
 import asyncio
-from datetime import date, timedelta
+from datetime import date
 
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import (AsyncEngine, AsyncSession,
@@ -29,7 +29,7 @@ admin = User(
     ),
     salary=Salary(
         amount=99999.99,
-        raise_date=date.today() + timedelta(days=30)
+        raise_date=date(2024, 1, 1)
     )
 )
 staff = User(
@@ -48,7 +48,7 @@ staff = User(
     ),
     salary=Salary(
         amount=199999.99,
-        raise_date=date.today() + timedelta(days=60)
+        raise_date=date(2025, 1, 1)
     )
 )
 employee_1 = User(
@@ -67,7 +67,7 @@ employee_1 = User(
     ),
     salary=Salary(
         amount=59999.99,
-        raise_date=date.today() + timedelta(days=180)
+        raise_date=date(2023, 8, 1)
     )
 )
 employee_2 = User(
@@ -84,7 +84,7 @@ employee_2 = User(
     ),
     salary=Salary(
         amount=79999.99,
-        raise_date=date.today() + timedelta(days=15)
+        raise_date=date(2023, 11, 1)
     )
 )
 employee_3 = User(
@@ -103,7 +103,7 @@ employee_3 = User(
     ),
     salary=Salary(
         amount=299999.99,
-        raise_date=date.today() + timedelta(days=200)
+        raise_date=date(2023, 7, 1)
     )
 )
 
