@@ -22,7 +22,7 @@ class SalaryCRUD(BaseCRUD):
         self,
         date_after: FutureDate | None = None,
         date_before: FutureDate | None = None
-    ) -> list[Salary | None]:
+    ) -> list[Salary]:
         """Возвращает список всех объектов модели.
 
         При получении аргументов `date_before`, `date_after` -

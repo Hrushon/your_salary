@@ -23,7 +23,7 @@ router = APIRouter(
 
 
 @router.post(
-    "/login/",
+    '/login/',
     status_code=status.HTTP_200_OK,
     summary='Выполнить аутентификацию',
     response_description='Аутентификация выполнена',
