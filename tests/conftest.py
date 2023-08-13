@@ -24,6 +24,7 @@ database_url_test: str = settings.get_test_base_url
 if settings.DEVELOPMENT:
     database_url_test: str = settings.DB_DEV_TEST
 
+
 raise_date: date = date.today() + timedelta(days=15)
 
 app: FastAPI = create_application()
