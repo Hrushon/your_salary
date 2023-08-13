@@ -1,3 +1,5 @@
+![Workflow](https://github.com/Hrushon/your_salary/actions/workflows/your_salary_build.yml/badge.svg)
+
 # Your Salary ™
 ## Бэкенд приложения в рамках выполнения тестового задания
 
