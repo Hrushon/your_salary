@@ -21,8 +21,8 @@ class BaseCRUD(ABC):
         """Возвращает объект модели из БД по `id` или `None`."""
         return await self._session.get(self._model, obj_id)
 
-    async def get_or_404(self, obj_id: int) -> ModelType | None:
-        """Возвращает объект модели из БД `id` или ошибку `404`."""
+    async def get_or_404(self, obj_id: int) -> ModelType:
+        """Возвращает объект модели из БД по `id` или ошибку `404`."""
         obj = await self.get_or_none(obj_id=obj_id)
         if not obj:
             raise custom_exceptions.ObjectNotExistError(
@@ -30,7 +30,7 @@ class BaseCRUD(ABC):
             )
         return obj
 
-    async def get_all(self) -> list[ModelType | None]:
+    async def get_all(self) -> list[ModelType]:
         """Возвращает список всех объектов модели."""
         objects = await self._session.scalars(select(self._model))
         return objects.unique().all()

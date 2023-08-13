@@ -3,16 +3,19 @@ version: '3.8'
 services:
   test_db:
     image: postgres:15-alpine
-    ports:
-      - "6000:6000"
-    command: -p 6000
+    command: -p ${DB_PORT_TEST}
     env_file:
       - ./.env
 
   backend:
-    image: hrushon/your_salary:workflow
-    build: ../
+    image: hrushon/your_salary:test
+    build:
+      context: ../
+      args:
+        - test=true
     restart: always
+    environment:
+      - DEVELOPMENT=False
     depends_on:
       - test_db
     env_file:

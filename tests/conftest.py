@@ -22,7 +22,7 @@ from src.data_base.models import Base, Department, Position, Salary, User
 
 database_url_test: str = settings.get_test_base_url
 if settings.DEVELOPMENT:
-    database_url_test: str = settings.DB_DEV
+    database_url_test: str = settings.DB_DEV_TEST
 
 raise_date: date = date.today() + timedelta(days=15)
 
@@ -144,7 +144,7 @@ def event_loop(request):
     loop.close()
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope='session')
 async def aclient() -> AsyncGenerator[AsyncClient, None]:
     async with AsyncClient(app=app, base_url=base_url) as ac:
         yield ac
