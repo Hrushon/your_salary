@@ -47,4 +47,4 @@ jobs:
         echo DB_PORT_TEST=$DB_PORT_TEST >> .env
     - name: Test with Pytest
       run: |
-        pytest
+        poetry run pytest
